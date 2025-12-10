@@ -10,8 +10,18 @@
 // Configuration
 // ============================================================================
 
-// Pi API URL - Update this if your Pi uses a different IP address
-const PI_API_URL = 'http://192.168.4.1:1312';
+// Pi API URL - Auto-detect based on how the app is served
+// If served from the Pi (192.168.4.1), use relative URLs (same origin)
+// Otherwise, use the full Pi URL (for development/GitHub Pages)
+const PI_API_URL = (() => {
+    const host = window.location.hostname;
+    // If running from Pi, use relative path (same origin, no mixed content)
+    if (host === '192.168.4.1' || host === 'localhost' || host === '127.0.0.1') {
+        return '';  // Relative URL - same origin
+    }
+    // Otherwise use full URL (development/testing)
+    return 'http://192.168.4.1:1312';
+})();
 
 // ============================================================================
 // State (UI state only - data is in IndexedDB)

@@ -1,18 +1,22 @@
 /**
  * KAT Mobile Webapp - Service Worker
  * Provides offline caching for PWA functionality
+ *
+ * Note: When served via the Pi loader (pi-loader/index.html), the loader
+ * handles caching. This service worker is for direct GitHub Pages access.
  */
 
-const CACHE_NAME = 'kat-mobile-v1';
+const CACHE_NAME = 'kat-mobile-v2';
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/css/style.css',
-    '/js/db.js',
-    '/js/identifier.js',
-    '/js/sync.js',
-    '/js/app.js',
-    '/manifest.json',
+    './',
+    './index.html',
+    './css/style.css',
+    './js/db.js',
+    './js/identifier.js',
+    './js/sync.js',
+    './js/app.js',
+    './manifest.json',
+    './data/library.json',
 ];
 
 // Install event - cache static assets
