@@ -81,7 +81,6 @@ const state = {
 
 const elements = {
     // Header
-    menuBtn: document.getElementById('menuBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
     piWarningBanner: document.getElementById('piWarningBanner'),
 
