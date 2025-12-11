@@ -690,6 +690,7 @@ async function stopPreview() {
 
 function resetPreviewUI() {
     state.previewActive = false;
+    elements.previewImage.onerror = null;  // Clear handler to stop error loop
     elements.previewImage.src = '';
     elements.previewImage.classList.add('hidden');
     elements.previewPlaceholder.classList.remove('hidden');
