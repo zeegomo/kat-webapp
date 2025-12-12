@@ -20,7 +20,7 @@ const PI_API_URL = (() => {
         return '';  // Relative URL - same origin
     }
     // Otherwise use full URL (development/testing)
-    return 'http://192.168.4.1:1312';
+    return 'https://192.168.4.1';
 })();
 
 // ============================================================================
@@ -47,6 +47,7 @@ const state = {
 
     // UI state
     previewActive: false,
+    startingPreview: false,
     capturing: false,
     currentAcquisition: null,
     darkMode: true,
@@ -174,6 +175,12 @@ const elements = {
     syncNowBtn: document.getElementById('syncNowBtn'),
     pendingCount: document.getElementById('pendingCount'),
     syncStatusEl: document.getElementById('syncStatus'),
+
+    // Version
+    currentVersion: document.getElementById('currentVersion'),
+    versionStatus: document.getElementById('versionStatus'),
+    checkUpdateBtn: document.getElementById('checkUpdateBtn'),
+    updateNowBtn: document.getElementById('updateNowBtn'),
 };
 
 // ============================================================================
@@ -646,6 +653,13 @@ async function handleStep1Next() {
 // ============================================================================
 
 async function startPreview() {
+    // Prevent concurrent start requests
+    if (state.startingPreview || state.previewActive) {
+        console.log('Preview start already in progress or active, skipping');
+        return;
+    }
+    state.startingPreview = true;
+
     console.log('Starting preview...');
     try {
         const response = await api.startPreview();
@@ -677,6 +691,8 @@ async function startPreview() {
         console.error('Failed to start preview:', error);
         elements.previewStatus.textContent = `Error: ${error.message}`;
         resetPreviewUI();
+    } finally {
+        state.startingPreview = false;
     }
 }
 
@@ -716,19 +732,16 @@ async function pollPreviewStatus() {
         console.log('Preview status:', status);
         if (status.streaming) {
             const expInfo = getExposureInfo(status.exposure_us);
-            elements.previewStatus.textContent = `${status.fps} FPS | ${status.exposure_us}μs (${expInfo.text})`;
-            elements.previewStatus.className = `preview-status ${expInfo.class}`;
+            elements.previewStatus.innerHTML = `${status.fps} FPS<br><span class="${expInfo.class}">${status.exposure_us}μs (${expInfo.text})</span>`;
         } else {
             console.warn('Stream stopped unexpectedly');
             elements.previewStatus.textContent = 'Stream stopped';
-            elements.previewStatus.className = 'preview-status';
             resetPreviewUI();
             return;  // Stop polling
         }
     } catch (error) {
         console.error('Status poll error:', error);
         elements.previewStatus.textContent = 'Connection error';
-        elements.previewStatus.className = 'preview-status';
         resetPreviewUI();
         return;  // Stop polling
     }
@@ -1274,6 +1287,7 @@ function openSettings() {
     elements.settingsPanel.classList.add('open');
     elements.overlay.classList.remove('hidden');
     elements.overlay.classList.add('visible');
+    loadVersionInfo();
 }
 
 function closeSettings() {
@@ -1458,6 +1472,144 @@ function stopSyncStatusPolling() {
 }
 
 // ============================================================================
+// Version Management
+// ============================================================================
+
+const VERSION_CONFIG = {
+    githubBase: 'https://zeegomo.github.io/kat-webapp',
+    loaderCacheDb: 'kat-loader-cache',
+    loaderCacheStore: 'app-files',
+    cacheVersionKey: 'cache-version',
+};
+
+// Store remote version when available
+let remoteVersionCache = null;
+
+function openLoaderCacheDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(VERSION_CONFIG.loaderCacheDb, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(VERSION_CONFIG.loaderCacheStore)) {
+                db.createObjectStore(VERSION_CONFIG.loaderCacheStore, { keyPath: 'path' });
+            }
+        };
+    });
+}
+
+async function getCurrentVersion() {
+    try {
+        const db = await openLoaderCacheDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readonly');
+            const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
+            const request = store.get(VERSION_CONFIG.cacheVersionKey);
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result?.content || null);
+        });
+    } catch (error) {
+        console.error('Failed to get current version:', error);
+        return null;
+    }
+}
+
+async function fetchRemoteVersion() {
+    try {
+        const response = await fetch(`${VERSION_CONFIG.githubBase}/version.txt?t=${Date.now()}`, {
+            signal: AbortSignal.timeout(10000)
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const version = await response.text();
+        return version.trim();
+    } catch (error) {
+        console.error('Failed to fetch remote version:', error);
+        return null;
+    }
+}
+
+async function loadVersionInfo() {
+    const currentVersion = await getCurrentVersion();
+    elements.currentVersion.textContent = currentVersion || 'unknown';
+}
+
+function showVersionStatus(message, type) {
+    if (!elements.versionStatus) return;
+    elements.versionStatus.textContent = message;
+    elements.versionStatus.className = `version-status ${type}`;
+}
+
+async function checkForUpdates() {
+    showVersionStatus('Checking for updates...', 'checking');
+    elements.checkUpdateBtn.disabled = true;
+    elements.updateNowBtn.classList.add('hidden');
+
+    try {
+        const [currentVersion, remoteVersion] = await Promise.all([
+            getCurrentVersion(),
+            fetchRemoteVersion()
+        ]);
+
+        elements.currentVersion.textContent = currentVersion || 'unknown';
+
+        if (!remoteVersion) {
+            showVersionStatus('Could not check for updates', 'error');
+            return;
+        }
+
+        remoteVersionCache = remoteVersion;
+
+        if (!currentVersion) {
+            showVersionStatus(`Update available: ${remoteVersion}`, 'update-available');
+            elements.updateNowBtn.classList.remove('hidden');
+        } else if (currentVersion === remoteVersion) {
+            showVersionStatus('Up to date', 'up-to-date');
+        } else {
+            showVersionStatus(`Update available: ${remoteVersion}`, 'update-available');
+            elements.updateNowBtn.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+        showVersionStatus('Could not check for updates', 'error');
+    } finally {
+        elements.checkUpdateBtn.disabled = false;
+    }
+}
+
+async function triggerUpdate() {
+    showVersionStatus('Updating...', 'checking');
+    elements.updateNowBtn.disabled = true;
+    elements.checkUpdateBtn.disabled = true;
+
+    try {
+        // Clear the loader cache to force re-download
+        const db = await openLoaderCacheDB();
+        const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
+        const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
+
+        // Clear all cached files
+        await new Promise((resolve, reject) => {
+            const request = store.clear();
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve();
+        });
+
+        showVersionStatus('Reloading...', 'checking');
+
+        // Reload the page - the pi-loader will re-download everything
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
+    } catch (error) {
+        console.error('Error triggering update:', error);
+        showVersionStatus('Update failed', 'error');
+        elements.updateNowBtn.disabled = false;
+        elements.checkUpdateBtn.disabled = false;
+    }
+}
+
+// ============================================================================
 // Library Sync (for browser-side identification)
 // ============================================================================
 
@@ -1605,6 +1757,10 @@ function setupEventListeners() {
     elements.autoSyncToggle.addEventListener('change', saveSyncSettings);
     elements.testSyncBtn.addEventListener('click', testSyncConnection);
     elements.syncNowBtn.addEventListener('click', syncNow);
+
+    // Version controls
+    elements.checkUpdateBtn.addEventListener('click', checkForUpdates);
+    elements.updateNowBtn.addEventListener('click', triggerUpdate);
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', cleanupBlobUrls);

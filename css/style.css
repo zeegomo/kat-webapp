@@ -817,7 +817,7 @@ body {
 .toggle-row input[type="checkbox"] {
     width: 22px;
     height: 22px;
-    accent-color: var(--text);
+    accent-color: var(--bg);
 }
 
 .calibration-status {
@@ -877,6 +877,71 @@ body {
 .sync-status.success {
     border-color: #22c55e;
     color: #22c55e;
+}
+
+/* Version settings */
+.version-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: 3px 5px 4px 6px;
+    font-size: 0.9375rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.version-info #currentVersion {
+    font-weight: 600;
+    font-family: ui-monospace, monospace;
+}
+
+.version-status {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 3px 5px 4px 6px;
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-md);
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.version-status:empty {
+    display: none;
+}
+
+.version-status.checking {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+}
+
+.version-status.up-to-date {
+    background: var(--bg-secondary);
+    border: 2px solid #22c55e;
+    color: #22c55e;
+}
+
+.version-status.update-available {
+    background: var(--bg-secondary);
+    border: 2px solid #f59e0b;
+    color: #f59e0b;
+}
+
+.version-status.error {
+    background: var(--bg-secondary);
+    border: 2px solid #ef4444;
+    color: #ef4444;
+}
+
+.version-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.version-actions .btn {
+    flex: 1;
 }
 
 /* ============================================================================
