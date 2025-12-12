@@ -324,6 +324,24 @@ body {
     margin-left: auto;
 }
 
+/* Exposure meter color classes */
+.exp-perfect,
+.exp-good {
+    color: #22c55e !important;
+}
+
+.exp-mediocre {
+    color: #eab308 !important;
+}
+
+.exp-scarce {
+    color: #f97316 !important;
+}
+
+.exp-bad {
+    color: #ef4444 !important;
+}
+
 /* ============================================================================
    Capture Section
    ============================================================================ */

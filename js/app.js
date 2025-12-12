@@ -700,6 +700,14 @@ function resetPreviewUI() {
     elements.previewStatus.textContent = '';
 }
 
+function getExposureInfo(exp_us) {
+    if (exp_us < 300) return { text: 'Perfect', class: 'exp-perfect' };
+    if (exp_us < 3000) return { text: 'Good', class: 'exp-good' };
+    if (exp_us < 6000) return { text: 'Mediocre', class: 'exp-mediocre' };
+    if (exp_us < 10000) return { text: 'Scarce', class: 'exp-scarce' };
+    return { text: 'Bad', class: 'exp-bad' };
+}
+
 async function pollPreviewStatus() {
     if (!state.previewActive) return;
 
@@ -707,16 +715,20 @@ async function pollPreviewStatus() {
         const status = await api.getPreviewStatus();
         console.log('Preview status:', status);
         if (status.streaming) {
-            elements.previewStatus.textContent = `${status.fps} FPS`;
+            const expInfo = getExposureInfo(status.exposure_us);
+            elements.previewStatus.textContent = `${status.fps} FPS | ${status.exposure_us}μs (${expInfo.text})`;
+            elements.previewStatus.className = `preview-status ${expInfo.class}`;
         } else {
             console.warn('Stream stopped unexpectedly');
             elements.previewStatus.textContent = 'Stream stopped';
+            elements.previewStatus.className = 'preview-status';
             resetPreviewUI();
             return;  // Stop polling
         }
     } catch (error) {
         console.error('Status poll error:', error);
         elements.previewStatus.textContent = 'Connection error';
+        elements.previewStatus.className = 'preview-status';
         resetPreviewUI();
         return;  // Stop polling
     }
