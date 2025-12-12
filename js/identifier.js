@@ -1,5 +1,5 @@
 /**
- * KAT Mobile Webapp - Browser-based Spectrum Identification
+ * spettromiao Mobile Webapp - Browser-based Spectrum Identification
  *
  * Correlation-based identification using cosine similarity and Pearson correlation.
  * Library is cached in IndexedDB for offline operation.

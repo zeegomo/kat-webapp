@@ -7,9 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a0a" id="themeColor">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="KAT">
-    <meta name="description" content="Mobile Raman spectrometer for substance identification">
-    <title>KAT Spectrometer</title>
+    <meta name="apple-mobile-web-app-title" content="spettromiao">
+    <meta name="description" content="spettromiao - Mobile Raman spectrometer">
+    <title>spettromiao</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -19,7 +19,7 @@
 <body>
     <!-- Header -->
     <header class="header">
-        <h1>KAT Spectrometer</h1>
+        <h1>spettromiao</h1>
         <div class="header-actions">
             <button class="sync-indicator" id="syncIndicator" aria-label="Sync status" title="Sync status">
                 <span class="sync-icon">↻</span>
@@ -34,7 +34,7 @@
         <span class="pi-warning-icon">⚠</span>
         <div class="pi-warning-content">
             <span class="pi-warning-title">Not connected to spectrometer</span>
-            <span class="pi-warning-instructions">Go to Settings → WiFi and connect to "KAT-Spectrometer"</span>
+            <span class="pi-warning-instructions">Go to Settings → WiFi and connect to "spettromiao"</span>
         </div>
     </div>
 
@@ -138,6 +138,9 @@
         <!-- Step 2: Calibration Check -->
         <section class="wizard-step hidden" id="step2" data-step="2">
             <h2>Calibration Check</h2>
+            <div id="filterBayReminder" class="filter-bay-reminder">
+                Open the filter bay before calibration
+            </div>
             <p class="step-instructions">Verify the laser line is visible and calibration looks correct.</p>
 
             <div class="preview-section-step2">
@@ -315,6 +318,14 @@
         <div class="modal-content">
             <button class="modal-close" id="closePlotModal">×</button>
             <img id="plotImage" src="" alt="Spectrum Plot">
+        </div>
+    </div>
+
+    <!-- Filter Bay Modal -->
+    <div id="filterBayModal" class="modal hidden">
+        <div class="modal-content filter-bay-modal-content">
+            <p>Close the filter bay</p>
+            <button id="filterBayModalOk" class="btn btn-primary">OK</button>
         </div>
     </div>
 

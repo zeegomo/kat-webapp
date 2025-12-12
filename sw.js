@@ -1,12 +1,12 @@
 /**
- * KAT Mobile Webapp - Service Worker
+ * spettromiao Mobile Webapp - Service Worker
  * Provides offline caching for PWA functionality
  *
  * Note: When served via the Pi loader (pi-loader/index.html), the loader
  * handles caching. This service worker is for direct GitHub Pages access.
  */
 
-const CACHE_NAME = 'kat-mobile-v2';
+const CACHE_NAME = 'spettromiao-mobile-v2';
 const STATIC_ASSETS = [
     './',
     './index.html',

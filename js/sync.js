@@ -1,5 +1,5 @@
 /**
- * KAT Mobile Webapp - Browser-to-CouchDB Sync Module
+ * spettromiao Mobile Webapp - Browser-to-CouchDB Sync Module
  *
  * Handles synchronization of session data from browser IndexedDB
  * directly to a remote CouchDB server using Bearer token authentication.

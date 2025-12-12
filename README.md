@@ -1,6 +1,6 @@
-# KAT Spectrometer Webapp
+# spettromiao Webapp
 
-Mobile webapp for the KAT DIY Raman spectrometer. This is the frontend that runs in your browser and communicates with the Raspberry Pi API server.
+Mobile webapp for the spettromiao DIY Raman spectrometer. This is the frontend that runs in your browser and communicates with the Raspberry Pi API server.
 
 ## Architecture
 
@@ -11,7 +11,7 @@ The recommended setup serves a small loader from the Pi that fetches the full ap
 │                        HOW IT WORKS                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│   1. User connects phone to Pi's WiFi (KAT-Spectrometer)        │
+│   1. User connects phone to Pi's WiFi (spettromiao)             │
 │                                                                 │
 │   2. Opens https://192.168.4.1 in browser                       │
 │      └── Pi serves pi-loader/index.html (tiny loader)           │
@@ -91,7 +91,7 @@ Then access via `https://192.168.4.1/`
 
 ### 4. Using the App
 
-1. Connect phone to Pi's WiFi network (KAT-Spectrometer)
+1. Connect phone to Pi's WiFi network (spettromiao)
 2. Open `https://192.168.4.1` (or whichever port serves the loader)
 3. First time: Loader downloads app from GitHub (needs internet via Pi or mobile data)
 4. Subsequent uses: Works offline from cache

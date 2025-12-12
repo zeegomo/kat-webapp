@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0a0a0a">
-    <title>KAT Spectrometer</title>
+    <title>spettromiao</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -49,14 +49,14 @@
 <body>
     <div class="loader">
         <div class="spinner" id="spinner"></div>
-        <div class="status" id="status">Loading KAT Spectrometer...</div>
+        <div class="status" id="status">Loading spettromiao...</div>
         <div class="error" id="error"></div>
         <button class="retry-btn" id="retryBtn" style="display:none" onclick="loadApp()">Retry</button>
     </div>
 
     <script>
         /**
-         * KAT Loader - Fetches the app from GitHub and caches locally
+         * spettromiao Loader - Fetches the app from GitHub and caches locally
          *
          * This file should be served by the Raspberry Pi.
          * It fetches the latest app from GitHub Pages when internet is available,
@@ -65,7 +65,7 @@
 
         // IMPORTANT: Update this to your GitHub Pages URL
         const GITHUB_BASE = 'https://zeegomo.github.io/kat-webapp';
-        const CACHE_DB_NAME = 'kat-loader-cache';
+        const CACHE_DB_NAME = 'spettromiao-loader-cache';
         const CACHE_STORE_NAME = 'app-files';
         const CACHE_VERSION_KEY = 'cache-version';
 
@@ -135,7 +135,7 @@
         }
 
         async function loadApp() {
-            statusEl.textContent = 'Loading KAT Spectrometer...';
+            statusEl.textContent = 'Loading spettromiao...';
             errorEl.textContent = '';
             spinnerEl.style.display = 'block';
             retryBtn.style.display = 'none';

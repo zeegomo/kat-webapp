@@ -1,5 +1,5 @@
 /**
- * KAT Mobile Webapp - Wizard-Style Frontend
+ * spettromiao Mobile Webapp - Wizard-Style Frontend
  *
  * Uses IndexedDB for persistent storage.
  * All session data and files stored locally in browser.
@@ -164,6 +164,11 @@ const elements = {
     plotImage: document.getElementById('plotImage'),
     closePlotModal: document.getElementById('closePlotModal'),
 
+    // Filter Bay Modal
+    filterBayReminder: document.getElementById('filterBayReminder'),
+    filterBayModal: document.getElementById('filterBayModal'),
+    filterBayModalOk: document.getElementById('filterBayModalOk'),
+
     // Sync
     syncIndicator: document.getElementById('syncIndicator'),
     syncBadge: document.getElementById('syncBadge'),
@@ -306,9 +311,12 @@ function goToStep(stepNumber) {
         }
     }
 
-    // Stop preview if leaving step 2
-    if (state.currentStep === 2 && stepNumber !== 2 && state.previewActive) {
-        stopPreview();
+    // Stop preview and hide reminder if leaving step 2
+    if (state.currentStep === 2 && stepNumber !== 2) {
+        if (state.previewActive) {
+            stopPreview();
+        }
+        elements.filterBayReminder.classList.add('hidden');
     }
 
     // Update state
@@ -391,6 +399,8 @@ function showCurrentStep() {
     // Step-specific initialization
     if (state.currentStep === 2) {
         loadCalibrationStatus();
+        // Show filter bay reminder
+        elements.filterBayReminder.classList.remove('hidden');
         // Auto-start preview on entering step 2
         if (!state.previewActive) {
             startPreview();
@@ -773,6 +783,11 @@ function handleStep2Back() {
 }
 
 function handleStep2Confirm() {
+    elements.filterBayModal.classList.remove('hidden');
+}
+
+function handleFilterBayModalOk() {
+    elements.filterBayModal.classList.add('hidden');
     state.stepValidation.step2 = true;
     goToStep(3);
 }
@@ -1477,7 +1492,7 @@ function stopSyncStatusPolling() {
 
 const VERSION_CONFIG = {
     githubBase: 'https://zeegomo.github.io/kat-webapp',
-    loaderCacheDb: 'kat-loader-cache',
+    loaderCacheDb: 'spettromiao-loader-cache',
     loaderCacheStore: 'app-files',
     cacheVersionKey: 'cache-version',
 };
@@ -1595,6 +1610,21 @@ async function triggerUpdate() {
             request.onsuccess = () => resolve();
         });
 
+        // Save the new version so it displays correctly after reload
+        if (remoteVersionCache) {
+            const tx2 = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
+            const store2 = tx2.objectStore(VERSION_CONFIG.loaderCacheStore);
+            await new Promise((resolve, reject) => {
+                const request = store2.put({
+                    path: VERSION_CONFIG.cacheVersionKey,
+                    content: remoteVersionCache,
+                    timestamp: Date.now()
+                });
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve();
+            });
+        }
+
         showVersionStatus('Reloading...', 'checking');
 
         // Reload the page - the pi-loader will re-download everything
@@ -1684,6 +1714,7 @@ function setupEventListeners() {
     elements.stopPreviewBtn.addEventListener('click', stopPreview);
     elements.step2BackBtn.addEventListener('click', handleStep2Back);
     elements.step2ConfirmBtn.addEventListener('click', handleStep2Confirm);
+    elements.filterBayModalOk.addEventListener('click', handleFilterBayModalOk);
 
     // Step 3 controls
     elements.captureBtn.addEventListener('click', capture);

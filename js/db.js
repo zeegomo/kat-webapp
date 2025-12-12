@@ -1,11 +1,11 @@
 /**
- * KAT Mobile Webapp - IndexedDB Storage Layer
+ * spettromiao Mobile Webapp - IndexedDB Storage Layer
  *
  * Provides persistent storage for sessions, acquisitions, files, and settings.
  * All data is stored locally in the browser and synced to CouchDB on demand.
  */
 
-const DB_NAME = 'kat-mobile';
+const DB_NAME = 'spettromiao-mobile';
 const DB_VERSION = 2;
 
 // Store names
