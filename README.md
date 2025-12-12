@@ -11,16 +11,16 @@ The recommended setup serves a small loader from the Pi that fetches the full ap
 │                        HOW IT WORKS                             │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
-│   1. User connects phone to Pi's WiFi (KAT-Spectrometer)       │
+│   1. User connects phone to Pi's WiFi (KAT-Spectrometer)        │
 │                                                                 │
-│   2. Opens http://192.168.4.1:1312 in browser                  │
-│      └── Pi serves pi-loader/index.html (tiny loader)          │
+│   2. Opens https://192.168.4.1 in browser                       │
+│      └── Pi serves pi-loader/index.html (tiny loader)           │
 │                                                                 │
-│   3. Loader fetches latest app from GitHub Pages               │
-│      └── Caches in IndexedDB for offline use                   │
+│   3. Loader fetches latest app from GitHub Pages                │
+│      └── Caches in IndexedDB for offline use                    │
 │                                                                 │
-│   4. App runs locally, API calls go to Pi (same origin)        │
-│      └── No mixed content issues!                              │
+│   4. App runs locally, API calls go to Pi (same origin)         │
+│                                                                 │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -87,12 +87,12 @@ Run alongside your API on a different port:
 cd pi-loader
 python -m http.server 80
 ```
-Then access via `http://192.168.4.1/`
+Then access via `https://192.168.4.1/`
 
 ### 4. Using the App
 
 1. Connect phone to Pi's WiFi network (KAT-Spectrometer)
-2. Open `http://192.168.4.1:1312` (or whichever port serves the loader)
+2. Open `https://192.168.4.1` (or whichever port serves the loader)
 3. First time: Loader downloads app from GitHub (needs internet via Pi or mobile data)
 4. Subsequent uses: Works offline from cache
 
