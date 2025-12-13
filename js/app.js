@@ -1554,6 +1554,19 @@ const VERSION_CONFIG = {
     cacheVersionKey: 'cache-version',
 };
 
+// Files to fetch from GitHub for updates (must match pi-loader)
+const APP_FILES = [
+    'index.html',
+    'css/style.css',
+    'js/db.js',
+    'js/identifier.js',
+    'js/sync.js',
+    'js/app.js',
+    'manifest.json',
+    'sw.js',
+    'data/library.json'
+];
+
 // Store remote version when available
 let remoteVersionCache = null;
 
@@ -1650,29 +1663,42 @@ async function checkForUpdates() {
 }
 
 async function triggerUpdate() {
-    showVersionStatus('Updating...', 'checking');
+    showVersionStatus('Downloading update...', 'checking');
     elements.updateNowBtn.disabled = true;
     elements.checkUpdateBtn.disabled = true;
 
     try {
-        // Clear the loader cache to force re-download
         const db = await openLoaderCacheDB();
-        const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
-        const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
+        const files = {};
 
-        // Clear all cached files
-        await new Promise((resolve, reject) => {
-            const request = store.clear();
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve();
+        // Fetch all files from GitHub
+        const fetchPromises = APP_FILES.map(async (path) => {
+            const response = await fetch(
+                `${VERSION_CONFIG.githubBase}/${path}?t=${Date.now()}`,
+                { signal: AbortSignal.timeout(30000) }
+            );
+            if (!response.ok) throw new Error(`Failed to fetch ${path}: HTTP ${response.status}`);
+            const content = await response.text();
+            files[path] = content;
+
+            // Cache the file
+            const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
+            const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
+            await new Promise((resolve, reject) => {
+                const request = store.put({ path, content, timestamp: Date.now() });
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve();
+            });
         });
 
-        // Save the new version so it displays correctly after reload
+        await Promise.all(fetchPromises);
+
+        // Save the new version
         if (remoteVersionCache) {
-            const tx2 = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
-            const store2 = tx2.objectStore(VERSION_CONFIG.loaderCacheStore);
+            const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readwrite');
+            const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
             await new Promise((resolve, reject) => {
-                const request = store2.put({
+                const request = store.put({
                     path: VERSION_CONFIG.cacheVersionKey,
                     content: remoteVersionCache,
                     timestamp: Date.now()
@@ -1682,18 +1708,60 @@ async function triggerUpdate() {
             });
         }
 
-        showVersionStatus('Reloading...', 'checking');
+        showVersionStatus('Applying update...', 'checking');
 
-        // Reload the page - the pi-loader will re-download everything
-        setTimeout(() => {
-            window.location.reload();
-        }, 500);
+        // Render the new version immediately
+        renderAppFromFiles(files);
     } catch (error) {
         console.error('Error triggering update:', error);
-        showVersionStatus('Update failed', 'error');
+        showVersionStatus('Update failed: ' + error.message, 'error');
         elements.updateNowBtn.disabled = false;
         elements.checkUpdateBtn.disabled = false;
     }
+}
+
+function renderAppFromFiles(files) {
+    // Parse the HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(files['index.html'], 'text/html');
+
+    // Inline the CSS
+    const styleLinks = doc.querySelectorAll('link[rel="stylesheet"]');
+    styleLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        const cssPath = href.startsWith('./') ? href.slice(2) : href;
+        if (files[cssPath]) {
+            const style = doc.createElement('style');
+            style.textContent = files[cssPath];
+            link.replaceWith(style);
+        }
+    });
+
+    // Inline the JavaScript
+    const scripts = doc.querySelectorAll('script[src]');
+    scripts.forEach(script => {
+        const src = script.getAttribute('src');
+        const jsPath = src.startsWith('./') ? src.slice(2) : src;
+        if (files[jsPath]) {
+            const newScript = doc.createElement('script');
+            newScript.textContent = files[jsPath];
+            script.replaceWith(newScript);
+        }
+    });
+
+    // Update manifest link to inline data URL
+    if (files['manifest.json']) {
+        const manifestLink = doc.querySelector('link[rel="manifest"]');
+        if (manifestLink) {
+            const dataUrl = 'data:application/json,' + encodeURIComponent(files['manifest.json']);
+            manifestLink.setAttribute('href', dataUrl);
+        }
+    }
+
+    // Write the complete document
+    document.open();
+    document.write(doc.documentElement.outerHTML);
+    document.close();
 }
 
 // ============================================================================
