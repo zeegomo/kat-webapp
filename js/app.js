@@ -876,9 +876,14 @@ async function capture() {
         });
 
         eventSource.addEventListener('result', async (event) => {
-            cleanup();
-            const result = JSON.parse(event.data);
-            await captureComplete(result);
+            try {
+                cleanup();
+                const result = JSON.parse(event.data);
+                await captureComplete(result);
+            } catch (error) {
+                console.error('Error in result handler:', error);
+                captureError('Failed to process capture result: ' + error.message);
+            }
         });
 
         eventSource.addEventListener('error', (event) => {
@@ -898,6 +903,23 @@ async function capture() {
             cleanup();
             captureError('Connection lost');
         };
+
+        // Fallback handler for SSE messages without explicit event type
+        eventSource.onmessage = (event) => {
+            console.warn('Received unnamed SSE message:', event.data);
+            try {
+                const data = JSON.parse(event.data);
+                if (data.success !== undefined) {
+                    cleanup();
+                    captureComplete(data).catch(err => {
+                        console.error('Error processing unnamed result:', err);
+                        captureError('Failed to process capture result');
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to parse unnamed message:', e);
+            }
+        };
     } catch (error) {
         cleanup();
         captureError(error.message);
@@ -911,6 +933,16 @@ async function captureComplete(result) {
 
     if (result.success) {
         try {
+            // Log what data was received from Pi
+            console.log('Capture result received:', {
+                success: result.success,
+                hasPhoto: !!result.photo,
+                hasSummaryPlot: !!result.summary_plot,
+                hasCsv: !!result.csv,
+                hasSpectrum: !!result.spectrum,
+                hasPreprocessedSpectrum: !!result.preprocessed_spectrum,
+            });
+
             // Convert base64 to blobs
             const files = {};
 
@@ -919,6 +951,14 @@ async function captureComplete(result) {
             }
             if (result.summary_plot) {
                 files.summaryPlot = db.base64ToBlob(result.summary_plot, 'image/png');
+            }
+
+            // Warn if critical data is missing
+            if (!result.summary_plot) {
+                console.warn('No summary_plot received from Pi - View Summary will be disabled');
+            }
+            if (!result.csv) {
+                console.warn('No csv data received from Pi - Download CSV will be disabled');
             }
 
             // Perform browser-side identification
@@ -962,7 +1002,7 @@ async function captureComplete(result) {
             }
 
             // Update UI
-            updateGalleryUI();
+            await updateGalleryUI();
             updateExportButton();
             await updateResultUI(acquisition, identification);
 
