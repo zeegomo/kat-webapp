@@ -852,8 +852,22 @@ async function capture() {
     elements.progressFill.style.width = '0%';
     elements.progressText.textContent = 'Starting...';
 
+    let eventSource = null;
+    let captureTimeout = null;
+
+    const cleanup = () => {
+        if (captureTimeout) clearTimeout(captureTimeout);
+        if (eventSource) eventSource.close();
+    };
+
     try {
-        const eventSource = new EventSource(`${PI_API_URL}/api/capture`);
+        eventSource = new EventSource(`${PI_API_URL}/api/capture`);
+
+        // Timeout after 30 seconds if no result
+        captureTimeout = setTimeout(() => {
+            cleanup();
+            captureError('Capture timed out - camera may be stuck');
+        }, 30000);
 
         eventSource.addEventListener('progress', (event) => {
             const data = JSON.parse(event.data);
@@ -862,27 +876,30 @@ async function capture() {
         });
 
         eventSource.addEventListener('result', async (event) => {
+            cleanup();
             const result = JSON.parse(event.data);
-            eventSource.close();
             await captureComplete(result);
         });
 
         eventSource.addEventListener('error', (event) => {
+            cleanup();
             let errorMsg = 'Capture failed';
             try {
                 const data = JSON.parse(event.data);
                 errorMsg = data.message || errorMsg;
-            } catch (e) {}
-            eventSource.close();
+            } catch (e) {
+                console.error('Failed to parse error event:', e);
+            }
             captureError(errorMsg);
         });
 
         eventSource.onerror = () => {
             if (eventSource.readyState === EventSource.CLOSED) return;
-            eventSource.close();
+            cleanup();
             captureError('Connection lost');
         };
     } catch (error) {
+        cleanup();
         captureError(error.message);
     }
 }
