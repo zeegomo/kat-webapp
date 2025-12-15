@@ -278,9 +278,10 @@ const api = {
  * @param {string} url - The SSE endpoint URL
  * @param {Object} handlers - Event handlers { onProgress, onResult, onError, onClose }
  * @param {AbortController} controller - AbortController for cancellation
+ * @param {number} connectionTimeout - Timeout in ms for initial connection (default: 10000)
  * @returns {Promise<void>}
  */
-async function fetchSSE(url, handlers, controller) {
+async function fetchSSE(url, handlers, controller, connectionTimeout = 10000) {
     const fetchOptions = {
         signal: controller.signal,
     };
@@ -288,56 +289,67 @@ async function fetchSSE(url, handlers, controller) {
         fetchOptions.targetAddressSpace = 'local';
     }
 
-    const response = await fetch(url, fetchOptions);
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+    // Add timeout for initial connection to prevent hanging when offline
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, connectionTimeout);
 
     try {
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        const response = await fetch(url, fetchOptions);
+        clearTimeout(timeoutId); // Connection established, clear timeout
 
-            buffer += decoder.decode(value, { stream: true });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-            // Parse SSE events from buffer
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-            let currentEvent = { type: 'message', data: '' };
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-            for (const line of lines) {
-                if (line.startsWith('event:')) {
-                    currentEvent.type = line.slice(6).trim();
-                } else if (line.startsWith('data:')) {
-                    currentEvent.data += line.slice(5).trim();
-                } else if (line === '') {
-                    // Empty line = end of event
-                    if (currentEvent.data) {
-                        const eventType = currentEvent.type;
-                        const eventData = currentEvent.data;
+                buffer += decoder.decode(value, { stream: true });
 
-                        if (eventType === 'progress' && handlers.onProgress) {
-                            handlers.onProgress(JSON.parse(eventData));
-                        } else if (eventType === 'result' && handlers.onResult) {
-                            handlers.onResult(JSON.parse(eventData));
-                        } else if (eventType === 'error' && handlers.onError) {
-                            handlers.onError(JSON.parse(eventData));
-                        } else if (eventType === 'message' && handlers.onMessage) {
-                            handlers.onMessage(JSON.parse(eventData));
+                // Parse SSE events from buffer
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+                let currentEvent = { type: 'message', data: '' };
+
+                for (const line of lines) {
+                    if (line.startsWith('event:')) {
+                        currentEvent.type = line.slice(6).trim();
+                    } else if (line.startsWith('data:')) {
+                        currentEvent.data += line.slice(5).trim();
+                    } else if (line === '') {
+                        // Empty line = end of event
+                        if (currentEvent.data) {
+                            const eventType = currentEvent.type;
+                            const eventData = currentEvent.data;
+
+                            if (eventType === 'progress' && handlers.onProgress) {
+                                handlers.onProgress(JSON.parse(eventData));
+                            } else if (eventType === 'result' && handlers.onResult) {
+                                handlers.onResult(JSON.parse(eventData));
+                            } else if (eventType === 'error' && handlers.onError) {
+                                handlers.onError(JSON.parse(eventData));
+                            } else if (eventType === 'message' && handlers.onMessage) {
+                                handlers.onMessage(JSON.parse(eventData));
+                            }
                         }
+                        currentEvent = { type: 'message', data: '' };
                     }
-                    currentEvent = { type: 'message', data: '' };
                 }
             }
+        } finally {
+            reader.releaseLock();
+            if (handlers.onClose) handlers.onClose();
         }
     } finally {
-        reader.releaseLock();
-        if (handlers.onClose) handlers.onClose();
+        clearTimeout(timeoutId); // Always clear timeout
     }
 }
 
