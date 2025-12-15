@@ -998,11 +998,12 @@ async function capture() {
     elements.progressText.textContent = 'Starting...';
 
     const shutterTime = state.settings?.cameraSettings?.shutter || 5.0;
-    const timeoutMs = (shutterTime + 30) * 1000;  // exposure + 30s leeway
+    const timeoutMs = (shutterTime + 50) * 1000;  // exposure + 25s Pi overhead + 25s safety margin
 
-    // Start exposure progress animation
+    // Start capture progress animation (Pi has ~25s fixed processing overhead)
     const exposureStartTime = Date.now();
-    const exposureDurationMs = shutterTime * 1000;
+    const estimatedCaptureTime = shutterTime + 25;
+    const exposureDurationMs = estimatedCaptureTime * 1000;
     const startProgress = 10;
     const endProgress = 90;
 
@@ -1013,8 +1014,8 @@ async function capture() {
         const currentProgress = startProgress + (endProgress - startProgress) * fraction;
         elements.progressFill.style.width = `${currentProgress}%`;
 
-        const remaining = Math.max(0, shutterTime - (elapsed / 1000));
-        elements.progressText.textContent = `Exposing... ${remaining.toFixed(1)}s`;
+        const remaining = Math.max(0, estimatedCaptureTime - (elapsed / 1000));
+        elements.progressText.textContent = `Capturing... ${remaining.toFixed(1)}s`;
     }, 100);
 
     const controller = new AbortController();
