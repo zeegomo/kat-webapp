@@ -12,16 +12,19 @@
 
 // Pi API URL - Auto-detect based on how the app is served
 // If served from the Pi (192.168.4.1), use relative URLs (same origin)
-// Otherwise, use the full Pi URL (for development/GitHub Pages)
+// Otherwise, use the full Pi URL (for GitHub Pages with Local Network Access)
 const PI_API_URL = (() => {
     const host = window.location.hostname;
-    // If running from Pi, use relative path (same origin, no mixed content)
+    // If running from Pi or localhost, use relative path (same origin)
     if (host === '192.168.4.1' || host === 'localhost' || host === '127.0.0.1') {
         return '';  // Relative URL - same origin
     }
-    // Otherwise use full URL (development/testing)
+    // Otherwise use full URL (GitHub Pages - requires Local Network Access)
     return 'https://192.168.4.1';
 })();
+
+// Whether we need Local Network Access (when served from external origin)
+const NEEDS_LNA = PI_API_URL !== '';
 
 // ============================================================================
 // State (UI state only - data is in IndexedDB)
@@ -212,10 +215,18 @@ const api = {
         console.log(`API ${method} ${url}`);
 
         try {
-            const response = await fetch(url, {
+            // Build fetch options with Local Network Access if needed
+            const fetchOptions = {
                 ...options,
                 signal: controller.signal,
-            });
+            };
+            // Add targetAddressSpace for Local Network Access when served from external origin
+            // This enables Chrome 142+ LNA and bypasses mixed content restrictions
+            if (NEEDS_LNA) {
+                fetchOptions.targetAddressSpace = 'local';
+            }
+
+            const response = await fetch(url, fetchOptions);
             console.log(`API ${method} ${url} -> ${response.status}`);
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -255,6 +266,80 @@ const api = {
     async stopPreview() { return this.post('/preview/stop'); },
     async getPreviewStatus() { return this.get('/preview/status'); },
 };
+
+// ============================================================================
+// SSE Streaming Helper (for Local Network Access compatibility)
+// ============================================================================
+
+/**
+ * Fetch SSE stream with Local Network Access support.
+ * EventSource doesn't support fetch options, so we use fetch + ReadableStream.
+ *
+ * @param {string} url - The SSE endpoint URL
+ * @param {Object} handlers - Event handlers { onProgress, onResult, onError, onClose }
+ * @param {AbortController} controller - AbortController for cancellation
+ * @returns {Promise<void>}
+ */
+async function fetchSSE(url, handlers, controller) {
+    const fetchOptions = {
+        signal: controller.signal,
+    };
+    if (NEEDS_LNA) {
+        fetchOptions.targetAddressSpace = 'local';
+    }
+
+    const response = await fetch(url, fetchOptions);
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // Parse SSE events from buffer
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            let currentEvent = { type: 'message', data: '' };
+
+            for (const line of lines) {
+                if (line.startsWith('event:')) {
+                    currentEvent.type = line.slice(6).trim();
+                } else if (line.startsWith('data:')) {
+                    currentEvent.data += line.slice(5).trim();
+                } else if (line === '') {
+                    // Empty line = end of event
+                    if (currentEvent.data) {
+                        const eventType = currentEvent.type;
+                        const eventData = currentEvent.data;
+
+                        if (eventType === 'progress' && handlers.onProgress) {
+                            handlers.onProgress(JSON.parse(eventData));
+                        } else if (eventType === 'result' && handlers.onResult) {
+                            handlers.onResult(JSON.parse(eventData));
+                        } else if (eventType === 'error' && handlers.onError) {
+                            handlers.onError(JSON.parse(eventData));
+                        } else if (eventType === 'message' && handlers.onMessage) {
+                            handlers.onMessage(JSON.parse(eventData));
+                        }
+                    }
+                    currentEvent = { type: 'message', data: '' };
+                }
+            }
+        }
+    } finally {
+        reader.releaseLock();
+        if (handlers.onClose) handlers.onClose();
+    }
+}
 
 // ============================================================================
 // Pi Connectivity
@@ -747,6 +832,9 @@ async function startPreview() {
             resetPreviewUI();
         };
 
+        // Note: The startPreview() API call above has already triggered the LNA permission
+        // prompt (via targetAddressSpace: 'local' in fetchWithTimeout). Once granted, the
+        // permission applies to all requests to this origin, so img.src will work.
         elements.previewImage.src = `${PI_API_URL}/api/preview/stream`;
         elements.previewImage.classList.remove('hidden');
         elements.previewPlaceholder.classList.add('hidden');
@@ -909,102 +997,88 @@ async function capture() {
     elements.progressFill.style.width = '0%';
     elements.progressText.textContent = 'Starting...';
 
-    let eventSource = null;
+    const controller = new AbortController();
     let captureTimeout = null;
     let exposureTimer = null;
+    let completed = false;
     const shutterTime = state.settings?.cameraSettings?.shutter || 5.0;
 
     const cleanup = () => {
         if (captureTimeout) clearTimeout(captureTimeout);
         if (exposureTimer) clearInterval(exposureTimer);
-        if (eventSource) eventSource.close();
+        if (!completed) controller.abort();
     };
 
+    // Start exposure progress animation
+    const exposureStartTime = Date.now();
+    const exposureDurationMs = shutterTime * 1000;
+    const startProgress = 10;
+    const endProgress = 35;
+
+    elements.progressFill.style.width = `${startProgress}%`;
+    exposureTimer = setInterval(() => {
+        const elapsed = Date.now() - exposureStartTime;
+        const fraction = Math.min(elapsed / exposureDurationMs, 1);
+        const currentProgress = startProgress + (endProgress - startProgress) * fraction;
+        elements.progressFill.style.width = `${currentProgress}%`;
+
+        const remaining = Math.max(0, shutterTime - (elapsed / 1000));
+        elements.progressText.textContent = `Exposing... ${remaining.toFixed(1)}s`;
+    }, 100);
+
+    // Timeout after 30 seconds if no result
+    captureTimeout = setTimeout(() => {
+        cleanup();
+        captureError('Capture timed out - camera may be stuck');
+    }, 30000);
+
     try {
-        eventSource = new EventSource(`${PI_API_URL}/api/capture`);
-
-        // Start exposure progress animation
-        const exposureStartTime = Date.now();
-        const exposureDurationMs = shutterTime * 1000;
-        const startProgress = 10;
-        const endProgress = 35;
-
-        elements.progressFill.style.width = `${startProgress}%`;
-        exposureTimer = setInterval(() => {
-            const elapsed = Date.now() - exposureStartTime;
-            const fraction = Math.min(elapsed / exposureDurationMs, 1);
-            const currentProgress = startProgress + (endProgress - startProgress) * fraction;
-            elements.progressFill.style.width = `${currentProgress}%`;
-
-            const remaining = Math.max(0, shutterTime - (elapsed / 1000));
-            elements.progressText.textContent = `Exposing... ${remaining.toFixed(1)}s`;
-        }, 100);
-
-        // Timeout after 30 seconds if no result
-        captureTimeout = setTimeout(() => {
-            cleanup();
-            captureError('Capture timed out - camera may be stuck');
-        }, 30000);
-
-        eventSource.addEventListener('progress', (event) => {
-            // Clear exposure timer when backend takes over
-            if (exposureTimer) {
-                clearInterval(exposureTimer);
-                exposureTimer = null;
-            }
-            const data = JSON.parse(event.data);
-            elements.progressFill.style.width = `${data.progress}%`;
-            elements.progressText.textContent = data.message;
-        });
-
-        eventSource.addEventListener('result', async (event) => {
-            try {
+        // Use fetchSSE for Local Network Access compatibility
+        await fetchSSE(`${PI_API_URL}/api/capture`, {
+            onProgress: (data) => {
+                // Clear exposure timer when backend takes over
+                if (exposureTimer) {
+                    clearInterval(exposureTimer);
+                    exposureTimer = null;
+                }
+                elements.progressFill.style.width = `${data.progress}%`;
+                elements.progressText.textContent = data.message;
+            },
+            onResult: async (result) => {
+                try {
+                    completed = true;
+                    cleanup();
+                    await captureComplete(result);
+                } catch (error) {
+                    console.error('Error in result handler:', error);
+                    captureError('Failed to process capture result: ' + error.message);
+                }
+            },
+            onError: (data) => {
                 cleanup();
-                const result = JSON.parse(event.data);
-                await captureComplete(result);
-            } catch (error) {
-                console.error('Error in result handler:', error);
-                captureError('Failed to process capture result: ' + error.message);
-            }
-        });
-
-        eventSource.addEventListener('error', (event) => {
-            cleanup();
-            let errorMsg = 'Capture failed';
-            try {
-                const data = JSON.parse(event.data);
-                errorMsg = data.message || errorMsg;
-            } catch (e) {
-                console.error('Failed to parse error event:', e);
-            }
-            captureError(errorMsg);
-        });
-
-        eventSource.onerror = () => {
-            if (eventSource.readyState === EventSource.CLOSED) return;
-            cleanup();
-            captureError('Connection lost');
-        };
-
-        // Fallback handler for SSE messages without explicit event type
-        eventSource.onmessage = (event) => {
-            console.warn('Received unnamed SSE message:', event.data);
-            try {
-                const data = JSON.parse(event.data);
+                const errorMsg = data.message || 'Capture failed';
+                captureError(errorMsg);
+            },
+            onMessage: (data) => {
+                // Fallback handler for SSE messages without explicit event type
+                console.warn('Received unnamed SSE message:', data);
                 if (data.success !== undefined) {
+                    completed = true;
                     cleanup();
                     captureComplete(data).catch(err => {
                         console.error('Error processing unnamed result:', err);
                         captureError('Failed to process capture result');
                     });
                 }
-            } catch (e) {
-                console.error('Failed to parse unnamed message:', e);
-            }
-        };
+            },
+        }, controller);
     } catch (error) {
+        if (error.name === 'AbortError') {
+            // Intentional abort (timeout or cleanup), already handled
+            return;
+        }
         cleanup();
-        captureError(error.message);
+        captureError(error.message || 'Connection lost');
     }
 }
 
