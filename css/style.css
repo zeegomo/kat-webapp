@@ -897,6 +897,42 @@ body {
     accent-color: var(--bg);
 }
 
+/* Language selection options */
+.language-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.language-option {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    padding: var(--spacing-sm);
+    border-radius: 3px 5px 4px 6px;
+    transition: background 0.15s ease;
+}
+
+.language-option:hover {
+    background: var(--bg-secondary);
+}
+
+.language-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--text);
+    cursor: pointer;
+}
+
+.language-option span {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    cursor: pointer;
+}
+
 .calibration-status {
     padding: var(--spacing-md);
     background: var(--bg-secondary);

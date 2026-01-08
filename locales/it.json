@@ -177,6 +177,11 @@
       "title": "Visualizzazione",
       "darkMode": "Modalità scura"
     },
+    "language": {
+      "title": "Lingua",
+      "english": "English",
+      "italian": "Italiano"
+    },
     "spectrum": {
       "title": "Spettro",
       "autoDetect": "Rileva automaticamente laser",

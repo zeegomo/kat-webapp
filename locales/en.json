@@ -177,6 +177,11 @@
       "title": "Display",
       "darkMode": "Dark mode"
     },
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "italian": "Italiano"
+    },
     "spectrum": {
       "title": "Spectrum",
       "autoDetect": "Auto-detect laser",

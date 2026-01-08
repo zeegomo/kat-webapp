@@ -27,7 +27,7 @@ const i18n = {
     async init() {
         try {
             // Load language preference from IndexedDB settings
-            const settings = await db.getSetting('all');
+            const settings = await db.getSettings();
             if (settings && settings.language && this.supportedLangs.includes(settings.language)) {
                 this.currentLang = settings.language;
             } else {
@@ -98,7 +98,7 @@ const i18n = {
             this.currentLang = lang;
 
             // Save preference to IndexedDB
-            await db.saveSetting('language', lang);
+            await db.updateSettings({ language: lang });
 
             // Apply translations to DOM
             this.updateDOM();

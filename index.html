@@ -21,10 +21,6 @@
     <header class="header">
         <h1>spettromiao</h1>
         <div class="header-actions">
-            <button class="lang-btn" id="langBtn" data-i18n-aria="header.language" data-i18n-title="header.language" aria-label="Language" title="Language">
-                <span class="lang-flag">🌐</span>
-                <span class="lang-code" id="langCode">EN</span>
-            </button>
             <button class="sync-indicator" id="syncIndicator" data-i18n-aria="header.syncStatus" data-i18n-title="header.syncStatus" aria-label="Sync status" title="Sync status">
                 <span class="sync-icon">↻</span>
                 <span class="sync-badge hidden" id="syncBadge">0</span>
@@ -269,6 +265,21 @@
                     <span data-i18n="settings.display.darkMode">Dark mode</span>
                     <input type="checkbox" id="darkModeToggle" checked>
                 </label>
+            </div>
+
+            <!-- Language Settings -->
+            <div class="settings-group">
+                <h3 data-i18n="settings.language.title">Language</h3>
+                <div class="language-options">
+                    <label class="language-option">
+                        <input type="radio" name="language" value="en" id="langRadioEn">
+                        <span data-i18n="settings.language.english">English</span>
+                    </label>
+                    <label class="language-option">
+                        <input type="radio" name="language" value="it" id="langRadioIt">
+                        <span data-i18n="settings.language.italian">Italiano</span>
+                    </label>
+                </div>
             </div>
 
             <!-- Spectrum Settings -->

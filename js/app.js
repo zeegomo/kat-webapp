@@ -248,8 +248,8 @@ const elements = {
     historyDownloadCsvBtn: document.getElementById('historyDownloadCsvBtn'),
 
     // Language
-    langBtn: document.getElementById('langBtn'),
-    langCode: document.getElementById('langCode'),
+    langRadioEn: document.getElementById('langRadioEn'),
+    langRadioIt: document.getElementById('langRadioIt'),
 };
 
 // ============================================================================
@@ -1051,6 +1051,12 @@ function updateSettingsUI() {
     elements.laserAutoDetect.checked = cameraSettings.laserAutoDetect !== false;
     elements.laserWavelength.value = cameraSettings.laserWavelength || 785;
     updateLaserWavelengthVisibility();
+    // Update language radio buttons
+    if (elements.langRadioEn && elements.langRadioIt) {
+        const currentLang = i18n.currentLang;
+        elements.langRadioEn.checked = (currentLang === 'en');
+        elements.langRadioIt.checked = (currentLang === 'it');
+    }
 }
 
 function updateLaserWavelengthVisibility() {
@@ -2660,13 +2666,16 @@ function setupEventListeners() {
     elements.checkUpdateBtn.addEventListener('click', checkForUpdates);
     elements.updateNowBtn.addEventListener('click', triggerUpdate);
 
-    // Language switcher
-    elements.langBtn.addEventListener('click', async () => {
-        const newLang = i18n.currentLang === 'en' ? 'it' : 'en';
-        await i18n.setLanguage(newLang);
-        // Update button display
-        elements.langCode.textContent = newLang.toUpperCase();
-    });
+    // Language radio button handlers
+    if (elements.langRadioEn && elements.langRadioIt) {
+        [elements.langRadioEn, elements.langRadioIt].forEach(radio => {
+            radio.addEventListener('change', async (e) => {
+                if (e.target.checked) {
+                    await i18n.setLanguage(e.target.value);
+                }
+            });
+        });
+    }
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', cleanupBlobUrls);
@@ -2859,11 +2868,6 @@ async function init() {
 
     // Initialize i18n first (before any i18n.t() calls)
     await i18n.init();
-
-    // Initialize language button display
-    if (elements.langCode) {
-        elements.langCode.textContent = i18n.currentLang.toUpperCase();
-    }
 
     try {
         // Show a modal only if startup is slow (avoids flicker on fast loads).
