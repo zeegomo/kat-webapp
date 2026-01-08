@@ -1,0 +1,379 @@
+{
+  "app": {
+    "title": "spettromiao",
+    "description": "spettromiao - Mobile Raman spectrometer"
+  },
+  "header": {
+    "syncStatus": "Sync status",
+    "history": "History",
+    "historyTitle": "Browse history",
+    "help": "Help",
+    "settings": "Settings",
+    "language": "Language"
+  },
+  "warnings": {
+    "piNotConnected": "Not connected to spectrometer",
+    "piInstructions": "Go to Settings → WiFi and connect to \"spettromiao\"",
+    "needHelp": "Need help?",
+    "libraryUnavailable": "Identification library unavailable",
+    "libraryInstructions": "Substance identification will not work until library is loaded"
+  },
+  "wizard": {
+    "steps": {
+      "testInfo": "Test Info",
+      "calibration": "Calibration",
+      "capture": "Capture"
+    }
+  },
+  "step1": {
+    "title": "Test Information",
+    "eventName": {
+      "label": "Event name",
+      "placeholder": "e.g. Field Test #42",
+      "required": "*"
+    },
+    "substance": {
+      "label": "Substance",
+      "placeholder": "Start typing...",
+      "required": "*"
+    },
+    "appearance": {
+      "label": "Appearance",
+      "required": "*",
+      "selectPrompt": "-- Select appearance --",
+      "options": {
+        "powder": "Powder",
+        "crystal": "Crystal",
+        "liquid": "Liquid",
+        "pill": "Pill/Tablet",
+        "capsule": "Capsule",
+        "rock": "Rock/Chunk",
+        "paste": "Paste",
+        "paper": "Paper/Blotter",
+        "other": "Other (specify)"
+      }
+    },
+    "customAppearance": {
+      "label": "Custom appearance",
+      "placeholder": "Describe appearance..."
+    },
+    "substanceDesc": {
+      "label": "Substance description",
+      "placeholder": "Describe the pill, capsule, or blotter...",
+      "required": "*"
+    },
+    "photo": {
+      "label": "Photo of substance (optional)",
+      "takePhoto": "Take Photo",
+      "remove": "Remove",
+      "altText": "Substance photo"
+    },
+    "notes": {
+      "label": "Notes (optional)",
+      "placeholder": "Additional observations..."
+    }
+  },
+  "step2": {
+    "title": "Calibration Check",
+    "filterBayReminder": "Open the filter bay before calibration",
+    "instructions": "Verify the laser line is visible and calibration looks correct.",
+    "preview": {
+      "cameraFeed": "Camera feed",
+      "tapStart": "Tap Start to begin",
+      "altText": "Camera Preview"
+    },
+    "status": {
+      "checking": "Checking calibration...",
+      "camera": "Camera",
+      "wavelength": "Wavelength",
+      "ok": "OK",
+      "missing": "Missing"
+    }
+  },
+  "step3": {
+    "title": "Capture Spectrum",
+    "capture": "Capture",
+    "shutter": {
+      "label": "Shutter (seconds)",
+      "display": "{value}s"
+    },
+    "gain": {
+      "label": "Gain",
+      "display": "gain {value}"
+    },
+    "progress": {
+      "starting": "Starting...",
+      "capturing": "Capturing... {time}s",
+      "processing": "Processing..."
+    },
+    "exposure": {
+      "perfect": "Perfect",
+      "good": "Good",
+      "ok": "OK",
+      "meh": "Meh",
+      "bad": "Bad"
+    },
+    "results": {
+      "title": "Result",
+      "unknown": "Unknown",
+      "scoreNA": "score: N/A",
+      "score": "{score} | {confidence}",
+      "withSimilar": "{substance} (+{count} similar)",
+      "confidence": {
+        "high": "High confidence",
+        "moderate": "Moderate confidence",
+        "low": "Low confidence"
+      },
+      "wavelength": {
+        "detected": "{value}nm (detected)",
+        "manual": "{value}nm (manual)"
+      }
+    },
+    "gallery": {
+      "title": "Gallery",
+      "count": "({count})",
+      "toggleExpand": "▶",
+      "toggleCollapse": "▼",
+      "noAcquisitions": "No acquisitions yet"
+    }
+  },
+  "buttons": {
+    "next": "Next",
+    "back": "Back",
+    "start": "Start",
+    "stop": "Stop",
+    "capture": "Capture",
+    "confirm": "Confirm Calibration",
+    "export": "Export",
+    "newTest": "New Test",
+    "close": "Close",
+    "viewSummary": "View Summary",
+    "viewMatches": "View Matches",
+    "downloadCsv": "Download CSV",
+    "testConnection": "Test Connection",
+    "syncNow": "Sync Now",
+    "checkUpdates": "Check for Updates",
+    "updateNow": "Update Now",
+    "reload": "Reload",
+    "resetData": "Reset local data",
+    "ok": "OK"
+  },
+  "preview": {
+    "error": "Error: {message}",
+    "streamFailed": "Stream failed to load",
+    "streamStopped": "Stream stopped",
+    "connectionError": "Connection error",
+    "status": "{fps} FPS<br><span class=\"{class}\">{exposure}μs ({quality})</span>"
+  },
+  "capture": {
+    "timeout": "Capture timed out - camera may be stuck",
+    "failed": "Capture failed: {error}",
+    "error": "Capture error: {message}",
+    "saveFailed": "Capture succeeded but failed to save: {error}"
+  },
+  "settings": {
+    "title": "Settings",
+    "display": {
+      "title": "Display",
+      "darkMode": "Dark mode"
+    },
+    "spectrum": {
+      "title": "Spectrum",
+      "autoDetect": "Auto-detect laser",
+      "laserWavelength": "Laser wavelength (nm)"
+    },
+    "sync": {
+      "title": "Remote Sync",
+      "serverUrl": "Server URL",
+      "serverUrlPlaceholder": "https://kat.example.com",
+      "apiToken": "API Token",
+      "apiTokenPlaceholder": "Paste token here...",
+      "tokenStatus": {
+        "configured": "Token configured: {preview}...",
+        "notConfigured": "No token configured"
+      },
+      "autoSync": "Auto-sync when online",
+      "pending": "{count} pending",
+      "saved": "Settings saved",
+      "saveFailed": "Failed to save",
+      "testing": "Testing...",
+      "connectionSuccess": "Connection successful!",
+      "connectionFailed": "Connection failed"
+    },
+    "syncing": {
+      "inProgress": "Syncing...",
+      "complete": "Synced: {synced}",
+      "completeWithErrors": "Synced: {synced}, Failed: {failed}",
+      "failed": "Sync failed"
+    },
+    "version": {
+      "title": "App Version",
+      "current": "Current version:",
+      "unknown": "unknown",
+      "checking": "Checking for updates...",
+      "couldNotCheck": "Could not check for updates",
+      "upToDate": "Up to date",
+      "available": "Update available: {version}",
+      "downloading": "Downloading update...",
+      "applying": "Applying update...",
+      "failed": "Update failed: {error}"
+    }
+  },
+  "history": {
+    "title": "Test History",
+    "noSessions": "No test history yet",
+    "sessionDetails": "Session Details",
+    "backToList": "← Back",
+    "date": "Date:",
+    "event": "Event:",
+    "substance": "Substance:",
+    "appearance": "Appearance:",
+    "notes": "Notes:",
+    "acquisitions": "Acquisitions",
+    "acquisitionCount": "({count})",
+    "unnamedTest": "Unnamed Test",
+    "unnamed": "Unnamed",
+    "placeholder": "-",
+    "countSingular": "acquisition",
+    "countPlural": "acquisitions",
+    "noAcquisitions": "No acquisitions"
+  },
+  "modals": {
+    "plot": {
+      "altText": "Spectrum Plot"
+    },
+    "matches": {
+      "title": "Identification Matches"
+    },
+    "filterBay": {
+      "message": "Close the filter bay"
+    },
+    "startup": {
+      "title": "Starting…",
+      "message": "Loading…",
+      "error": "Startup error",
+      "failed": "Startup failed",
+      "openingStorage": "Opening local storage…",
+      "loadingSettings": "Loading settings…",
+      "loadingSessions": "Loading saved tests…"
+    }
+  },
+  "help": {
+    "title": "Help Guide",
+    "tabs": {
+      "workflow": "Workflow",
+      "troubleshooting": "Troubleshooting"
+    },
+    "workflow": {
+      "step1Title": "Step 1: Test Information",
+      "step1Intro": "Enter details about your test:",
+      "step1Items": {
+        "eventName": "<strong>Event name:</strong> A unique identifier for this test session",
+        "substance": "<strong>Substance:</strong> What you expect the sample to be",
+        "appearance": "<strong>Appearance:</strong> Physical form (powder, crystal, pill, etc.)",
+        "photo": "<strong>Photo:</strong> Required for pills, capsules, and blotters"
+      },
+      "step2Title": "Step 2: Calibration",
+      "step2Intro": "Verify the spectrometer is ready:",
+      "step2Items": {
+        "openBay": "Open the filter bay before starting",
+        "start": "Tap \"Start\" to see the live camera preview",
+        "verify": "Verify the laser line is visible and centered",
+        "closeBay": "Close the filter bay before proceeding"
+      },
+      "step3Title": "Step 3: Capture",
+      "step3Intro": "Acquire and review spectra:",
+      "step3Items": {
+        "adjust": "Adjust shutter time (0.1-10s) and gain as needed",
+        "capture": "Tap \"Capture\" to acquire a spectrum",
+        "review": "Review the identification result and confidence score",
+        "multiple": "Capture multiple spectra if needed",
+        "export": "Export results when finished"
+      }
+    },
+    "troubleshooting": {
+      "connectionTitle": "Connection Issues",
+      "connectionNotConnected": "<strong>Not connected to spectrometer:</strong>",
+      "connectionNotConnectedItems": {
+        "settings": "Go to your device's WiFi settings",
+        "connect": "Connect to the network named \"spettromiao\"",
+        "wait": "Wait a few seconds for the connection",
+        "reload": "Reload the app if the warning persists",
+        "power": "Verify the spectrometer is powered on"
+      },
+      "connectionCertificate": "<strong>Connected to WiFi but still shows \"Not connected\":</strong>",
+      "connectionCertificateItems": {
+        "openLink": "Open <a href=\"https://192.168.4.1\" target=\"_blank\">https://192.168.4.1</a> directly in your browser",
+        "acceptCert": "Accept the self-signed certificate warning",
+        "return": "Return to the app and reload"
+      },
+      "captureTitle": "Capture Problems",
+      "captureTimeout": "<strong>Camera timeout / stuck:</strong>",
+      "captureTimeoutItems": {
+        "reload": "Reload the page, or go back and forward a step",
+        "restart": "Restart the spectrometer device",
+        "reduceTime": "Try reducing shutter time (e.g., 3s instead of 5s)",
+        "wait": "Wait for the camera to fully initialize after restart"
+      },
+      "captureFailed": "<strong>Capture failed:</strong>",
+      "captureFailedItems": {
+        "connection": "Check that the spectrometer is still connected"
+      },
+      "captureBrightness": "<strong>Capture too bright / dark:</strong>",
+      "captureBrightnessItems": {
+        "filterBay": "Check that the filter bay is closed",
+        "lowerGain": "Try a lower gain setting if image is overexposed",
+        "increase": "Increase shutter time or gain if image is too dark"
+      },
+      "saveTitle": "Save/Export Issues",
+      "saveFailed": "<strong>Failed to save or export:</strong>",
+      "saveFailedItems": {
+        "storage": "Check if browser storage is full",
+        "export": "Export and delete old tests from History",
+        "browser": "Try using a different browser",
+        "cache": "Clear browser cache if issues persist"
+      },
+      "syncTitle": "Sync Issues",
+      "syncFailed": "<strong>Sync not working:</strong>",
+      "syncFailedItems": {
+        "url": "Verify the server URL is correct in Settings",
+        "token": "Check that your API token is valid",
+        "internet": "Ensure you have internet connectivity",
+        "test": "Use \"Test Connection\" to diagnose issues"
+      }
+    }
+  },
+  "errors": {
+    "photoSave": {
+      "message": "Failed to save photo: {error}",
+      "tip": "Check if browser storage is full. Try removing old tests from History."
+    },
+    "captureTimeout": {
+      "tip": "Try restarting the spectrometer. If problem persists, reduce shutter time."
+    },
+    "captureSaveFailed": {
+      "tip": "Storage may be full. Export current data and clear old tests."
+    },
+    "captureFailed": {
+      "tip": "Ensure spectrometer is connected and filter bay is closed."
+    },
+    "captureError": {
+      "tip": "Check spectrometer connection. If camera is stuck, restart the device."
+    },
+    "exportFailed": {
+      "message": "Export failed: {error}",
+      "tip": "Ensure you have enough storage space. Try exporting fewer acquisitions."
+    },
+    "sessionFailed": {
+      "message": "Failed to create new session",
+      "tip": "Browser storage may be corrupted. Try clearing old tests or reset in Settings."
+    },
+    "imageCompress": "Failed to compress image",
+    "imageLoad": "Failed to load image",
+    "noAcquisitionsToExport": "No acquisitions to export"
+  },
+  "confirmations": {
+    "newTest": "Start a new test? Current data will remain stored.",
+    "resetData": "Reset local data on this device?\n\nThis deletes saved tests and settings, but does not affect the spectrometer."
+  }
+}

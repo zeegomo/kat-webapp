@@ -21,13 +21,17 @@
     <header class="header">
         <h1>spettromiao</h1>
         <div class="header-actions">
-            <button class="sync-indicator" id="syncIndicator" aria-label="Sync status" title="Sync status">
+            <button class="lang-btn" id="langBtn" data-i18n-aria="header.language" data-i18n-title="header.language" aria-label="Language" title="Language">
+                <span class="lang-flag">🌐</span>
+                <span class="lang-code" id="langCode">EN</span>
+            </button>
+            <button class="sync-indicator" id="syncIndicator" data-i18n-aria="header.syncStatus" data-i18n-title="header.syncStatus" aria-label="Sync status" title="Sync status">
                 <span class="sync-icon">↻</span>
                 <span class="sync-badge hidden" id="syncBadge">0</span>
             </button>
-            <button class="history-btn" id="historyBtn" aria-label="History" title="Browse history">&#9776;</button>
-            <button class="help-btn" id="helpBtn" aria-label="Help" title="Help">?</button>
-            <button class="settings-btn" id="settingsBtn" aria-label="Settings">⚙</button>
+            <button class="history-btn" id="historyBtn" data-i18n-aria="header.history" data-i18n-title="header.historyTitle" aria-label="History" title="Browse history">&#9776;</button>
+            <button class="help-btn" id="helpBtn" data-i18n-aria="header.help" data-i18n-title="header.help" aria-label="Help" title="Help">?</button>
+            <button class="settings-btn" id="settingsBtn" data-i18n-aria="header.settings" aria-label="Settings">⚙</button>
         </div>
     </header>
 
@@ -35,8 +39,8 @@
     <div class="pi-warning-banner hidden" id="piWarningBanner">
         <span class="pi-warning-icon">⚠</span>
         <div class="pi-warning-content">
-            <span class="pi-warning-title">Not connected to spectrometer</span>
-            <span class="pi-warning-instructions">Go to Settings → WiFi and connect to "spettromiao" <button class="pi-warning-help-link" id="piWarningHelpLink">Need help?</button></span>
+            <span class="pi-warning-title" data-i18n="warnings.piNotConnected">Not connected to spectrometer</span>
+            <span class="pi-warning-instructions"><span data-i18n="warnings.piInstructions">Go to Settings → WiFi and connect to "spettromiao"</span> <button class="pi-warning-help-link" id="piWarningHelpLink" data-i18n="warnings.needHelp">Need help?</button></span>
         </div>
     </div>
 
@@ -44,8 +48,8 @@
     <div class="library-warning-banner hidden" id="libraryWarningBanner">
         <span class="library-warning-icon">⚠</span>
         <div class="library-warning-content">
-            <span class="library-warning-title">Identification library unavailable</span>
-            <span class="library-warning-instructions">Substance identification will not work until library is loaded</span>
+            <span class="library-warning-title" data-i18n="warnings.libraryUnavailable">Identification library unavailable</span>
+            <span class="library-warning-instructions" data-i18n="warnings.libraryInstructions">Substance identification will not work until library is loaded</span>
         </div>
     </div>
 
@@ -54,15 +58,15 @@
         <ol class="step-list">
             <li class="step active" data-step="1">
                 <span class="step-number">1</span>
-                <span class="step-label">Test Info</span>
+                <span class="step-label" data-i18n="wizard.steps.testInfo">Test Info</span>
             </li>
             <li class="step" data-step="2">
                 <span class="step-number">2</span>
-                <span class="step-label">Calibration</span>
+                <span class="step-label" data-i18n="wizard.steps.calibration">Calibration</span>
             </li>
             <li class="step" data-step="3">
                 <span class="step-number">3</span>
-                <span class="step-label">Capture</span>
+                <span class="step-label" data-i18n="wizard.steps.capture">Capture</span>
             </li>
         </ol>
     </nav>
@@ -71,128 +75,128 @@
     <main class="main">
         <!-- Step 1: Test Info -->
         <section class="wizard-step" id="step1" data-step="1">
-            <h2>Test Information</h2>
+            <h2 data-i18n="step1.title">Test Information</h2>
 
             <div class="form-group">
                 <label for="eventNameInput">
-                    <span>Event name <span class="required">*</span></span>
+                    <span><span data-i18n="step1.eventName.label">Event name</span> <span class="required" data-i18n="step1.eventName.required">*</span></span>
                 </label>
-                <input type="text" id="eventNameInput" placeholder="e.g. Field Test #42" required>
+                <input type="text" id="eventNameInput" data-i18n-placeholder="step1.eventName.placeholder" placeholder="e.g. Field Test #42" required>
             </div>
 
             <div class="form-group">
                 <label for="substanceInput">
-                    <span>Substance <span class="required">*</span></span>
+                    <span><span data-i18n="step1.substance.label">Substance</span> <span class="required" data-i18n="step1.substance.required">*</span></span>
                 </label>
-                <input type="text" id="substanceInput" list="substanceList" placeholder="Start typing..." autocomplete="off" required>
+                <input type="text" id="substanceInput" list="substanceList" data-i18n-placeholder="step1.substance.placeholder" placeholder="Start typing..." autocomplete="off" required>
                 <datalist id="substanceList"></datalist>
             </div>
 
             <div class="form-group">
                 <label for="appearanceSelect">
-                    <span>Appearance <span class="required">*</span></span>
+                    <span><span data-i18n="step1.appearance.label">Appearance</span> <span class="required" data-i18n="step1.appearance.required">*</span></span>
                 </label>
                 <select id="appearanceSelect">
-                    <option value="">-- Select appearance --</option>
-                    <option value="powder">Powder</option>
-                    <option value="crystal">Crystal</option>
-                    <option value="liquid">Liquid</option>
-                    <option value="pill">Pill/Tablet</option>
-                    <option value="capsule">Capsule</option>
-                    <option value="rock">Rock/Chunk</option>
-                    <option value="paste">Paste</option>
-                    <option value="paper">Paper/Blotter</option>
-                    <option value="other">Other (specify)</option>
+                    <option value="" data-i18n="step1.appearance.selectPrompt">-- Select appearance --</option>
+                    <option value="powder" data-i18n="step1.appearance.options.powder">Powder</option>
+                    <option value="crystal" data-i18n="step1.appearance.options.crystal">Crystal</option>
+                    <option value="liquid" data-i18n="step1.appearance.options.liquid">Liquid</option>
+                    <option value="pill" data-i18n="step1.appearance.options.pill">Pill/Tablet</option>
+                    <option value="capsule" data-i18n="step1.appearance.options.capsule">Capsule</option>
+                    <option value="rock" data-i18n="step1.appearance.options.rock">Rock/Chunk</option>
+                    <option value="paste" data-i18n="step1.appearance.options.paste">Paste</option>
+                    <option value="paper" data-i18n="step1.appearance.options.paper">Paper/Blotter</option>
+                    <option value="other" data-i18n="step1.appearance.options.other">Other (specify)</option>
                 </select>
             </div>
 
             <div class="form-group hidden" id="customAppearanceGroup">
                 <label for="customAppearanceInput">
-                    <span>Custom appearance</span>
+                    <span data-i18n="step1.customAppearance.label">Custom appearance</span>
                 </label>
-                <input type="text" id="customAppearanceInput" placeholder="Describe appearance...">
+                <input type="text" id="customAppearanceInput" data-i18n-placeholder="step1.customAppearance.placeholder" placeholder="Describe appearance...">
             </div>
 
             <div class="form-group hidden" id="substanceDescGroup">
                 <label for="substanceDescInput">
-                    <span>Substance description <span class="required">*</span></span>
+                    <span><span data-i18n="step1.substanceDesc.label">Substance description</span> <span class="required" data-i18n="step1.substanceDesc.required">*</span></span>
                 </label>
-                <textarea id="substanceDescInput" rows="2" placeholder="Describe the pill, capsule, or blotter..."></textarea>
+                <textarea id="substanceDescInput" rows="2" data-i18n-placeholder="step1.substanceDesc.placeholder" placeholder="Describe the pill, capsule, or blotter..."></textarea>
             </div>
 
             <div class="form-group hidden" id="substancePhotoGroup">
                 <label>
-                    <span>Photo of substance (optional)</span>
+                    <span data-i18n="step1.photo.label">Photo of substance (optional)</span>
                 </label>
                 <div class="photo-input-container">
                     <input type="file" id="substancePhotoInput" accept="image/*" capture="environment" class="hidden">
-                    <button type="button" id="takePhotoBtn" class="btn">Take Photo</button>
-                    <button type="button" id="removePhotoBtn" class="btn btn-small hidden">Remove</button>
+                    <button type="button" id="takePhotoBtn" class="btn" data-i18n="step1.photo.takePhoto">Take Photo</button>
+                    <button type="button" id="removePhotoBtn" class="btn btn-small hidden" data-i18n="step1.photo.remove">Remove</button>
                 </div>
                 <div id="substancePhotoPreview" class="photo-preview hidden">
-                    <img id="substancePhotoImg" src="" alt="Substance photo">
+                    <img id="substancePhotoImg" src="" data-i18n-alt="step1.photo.altText" alt="Substance photo">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="notesInput">
-                    <span>Notes (optional)</span>
+                    <span data-i18n="step1.notes.label">Notes (optional)</span>
                 </label>
-                <textarea id="notesInput" rows="2" placeholder="Additional observations..."></textarea>
+                <textarea id="notesInput" rows="2" data-i18n-placeholder="step1.notes.placeholder" placeholder="Additional observations..."></textarea>
             </div>
 
             <div class="wizard-nav">
-                <button id="step1NextBtn" class="btn btn-primary" disabled>Next</button>
+                <button id="step1NextBtn" class="btn btn-primary" data-i18n="buttons.next" disabled>Next</button>
             </div>
         </section>
 
         <!-- Step 2: Calibration Check -->
         <section class="wizard-step hidden" id="step2" data-step="2">
-            <h2>Calibration Check</h2>
-            <div id="filterBayReminder" class="filter-bay-reminder">
+            <h2 data-i18n="step2.title">Calibration Check</h2>
+            <div id="filterBayReminder" class="filter-bay-reminder" data-i18n="step2.filterBayReminder">
                 Open the filter bay before calibration
             </div>
-            <p class="step-instructions">Verify the laser line is visible and calibration looks correct.</p>
+            <p class="step-instructions" data-i18n="step2.instructions">Verify the laser line is visible and calibration looks correct.</p>
 
             <div class="preview-section-step2">
                 <div class="preview-container">
-                    <img id="previewImage" src="" alt="Camera Preview" class="preview-image hidden">
+                    <img id="previewImage" src="" data-i18n-alt="step2.preview.altText" alt="Camera Preview" class="preview-image hidden">
                     <div id="previewPlaceholder" class="preview-placeholder">
-                        <span>Camera feed</span>
-                        <small>Tap Start to begin</small>
+                        <span data-i18n="step2.preview.cameraFeed">Camera feed</span>
+                        <small data-i18n="step2.preview.tapStart">Tap Start to begin</small>
                     </div>
                 </div>
                 <div class="preview-controls">
-                    <button id="startPreviewBtn" class="btn btn-secondary">Start</button>
-                    <button id="stopPreviewBtn" class="btn btn-secondary hidden">Stop</button>
+                    <button id="startPreviewBtn" class="btn btn-secondary" data-i18n="buttons.start">Start</button>
+                    <button id="stopPreviewBtn" class="btn btn-secondary hidden" data-i18n="buttons.stop">Stop</button>
                     <span id="previewStatus" class="status-text"></span>
                 </div>
             </div>
 
-            <div id="calibrationStatus" class="calibration-status">
+            <div id="calibrationStatus" class="calibration-status" data-i18n="step2.status.checking">
                 Checking calibration...
             </div>
 
             <div class="wizard-nav">
-                <button id="step2BackBtn" class="btn btn-secondary">Back</button>
-                <button id="step2ConfirmBtn" class="btn btn-primary">Confirm Calibration</button>
+                <button id="step2BackBtn" class="btn btn-secondary" data-i18n="buttons.back">Back</button>
+                <button id="step2ConfirmBtn" class="btn btn-primary" data-i18n="buttons.confirm">Confirm Calibration</button>
             </div>
         </section>
 
         <!-- Step 3: Capture -->
         <section class="wizard-step hidden" id="step3" data-step="3">
-            <h2>Capture Spectrum</h2>
+            <h2 data-i18n="step3.title">Capture Spectrum</h2>
 
             <!-- Capture Controls -->
             <div class="capture-section">
-                <button id="captureBtn" class="capture-btn">
+                <button id="captureBtn" class="capture-btn" data-i18n="step3.capture">
                     Capture
                 </button>
                 <div class="capture-info">
                     <div class="inline-setting" id="shutterSetting">
                         <span id="shutterDisplay" class="setting-value">5.0s</span>
                         <div class="setting-popup hidden" id="shutterPopup">
-                            <label class="popup-label">Shutter (seconds)</label>
+                            <label class="popup-label" data-i18n="step3.shutter.label">Shutter (seconds)</label>
                             <input type="range" id="shutterSlider" min="0.1" max="10" step="0.1" value="5">
                         </div>
                     </div>
@@ -200,7 +204,7 @@
                     <div class="inline-setting" id="gainSetting">
                         <span id="gainDisplay" class="setting-value">gain 100</span>
                         <div class="setting-popup hidden" id="gainPopup">
-                            <label class="popup-label">Gain</label>
+                            <label class="popup-label" data-i18n="step3.gain.label">Gain</label>
                             <input type="range" id="gainSlider" min="1" max="200" step="1" value="100">
                         </div>
                     </div>
@@ -215,7 +219,7 @@
 
             <!-- Results Section -->
             <section id="resultsSection" class="results-section hidden">
-                <h3>Result</h3>
+                <h3 data-i18n="step3.results.title">Result</h3>
                 <div class="result-card">
                     <img id="resultThumb" src="" alt="Result" class="result-thumb">
                     <div class="result-info">
@@ -225,28 +229,28 @@
                     </div>
                 </div>
                 <div class="result-actions">
-                    <button id="viewPlotBtn" class="btn btn-small">View Summary</button>
-                    <button id="viewMatchesBtn" class="btn btn-small hidden">View Matches</button>
-                    <button id="downloadCsvBtn" class="btn btn-small">Download CSV</button>
+                    <button id="viewPlotBtn" class="btn btn-small" data-i18n="buttons.viewSummary">View Summary</button>
+                    <button id="viewMatchesBtn" class="btn btn-small hidden" data-i18n="buttons.viewMatches">View Matches</button>
+                    <button id="downloadCsvBtn" class="btn btn-small" data-i18n="buttons.downloadCsv">Download CSV</button>
                 </div>
             </section>
 
             <!-- Gallery Section (collapsible) -->
             <section class="gallery-section-collapsible">
                 <button class="section-toggle" id="galleryToggle">
-                    <span class="toggle-icon">▶</span> Gallery <span id="galleryCount">(0)</span>
+                    <span class="toggle-icon">▶</span> <span data-i18n="step3.gallery.title">Gallery</span> <span id="galleryCount">(0)</span>
                 </button>
                 <div class="gallery-content hidden" id="galleryContent">
                     <div id="galleryContainer" class="gallery-container">
-                        <div class="gallery-empty">No acquisitions yet</div>
+                        <div class="gallery-empty" data-i18n="step3.gallery.noAcquisitions">No acquisitions yet</div>
                     </div>
                 </div>
             </section>
 
             <div class="wizard-nav">
-                <button id="step3BackBtn" class="btn btn-secondary">Back</button>
-                <button id="newTestBtn" class="btn btn-secondary">New Test</button>
-                <button id="exportBtn" class="btn btn-primary" disabled>Export</button>
+                <button id="step3BackBtn" class="btn btn-secondary" data-i18n="buttons.back">Back</button>
+                <button id="newTestBtn" class="btn btn-secondary" data-i18n="buttons.newTest">New Test</button>
+                <button id="exportBtn" class="btn btn-primary" data-i18n="buttons.export" disabled>Export</button>
             </div>
         </section>
     </main>
@@ -254,51 +258,51 @@
     <!-- Settings Panel (slide-in) -->
     <div id="settingsPanel" class="settings-panel">
         <div class="settings-header">
-            <h2>Settings</h2>
-            <button id="closeSettingsBtn" class="close-btn" aria-label="Close">×</button>
+            <h2 data-i18n="settings.title">Settings</h2>
+            <button id="closeSettingsBtn" class="close-btn" data-i18n-aria="buttons.close" aria-label="Close">×</button>
         </div>
         <div class="settings-content">
             <!-- Display Settings -->
             <div class="settings-group">
-                <h3>Display</h3>
+                <h3 data-i18n="settings.display.title">Display</h3>
                 <label class="toggle-row">
-                    <span>Dark mode</span>
+                    <span data-i18n="settings.display.darkMode">Dark mode</span>
                     <input type="checkbox" id="darkModeToggle" checked>
                 </label>
             </div>
 
             <!-- Spectrum Settings -->
             <div class="settings-group">
-                <h3>Spectrum</h3>
+                <h3 data-i18n="settings.spectrum.title">Spectrum</h3>
                 <label class="toggle-row">
-                    <span>Auto-detect laser</span>
+                    <span data-i18n="settings.spectrum.autoDetect">Auto-detect laser</span>
                     <input type="checkbox" id="laserAutoDetect" checked>
                 </label>
                 <label id="laserWavelengthLabel">
-                    <span>Laser wavelength (nm)</span>
+                    <span data-i18n="settings.spectrum.laserWavelength">Laser wavelength (nm)</span>
                     <input type="number" id="laserWavelength" min="0" max="2000" step="0.1" value="785">
                 </label>
             </div>
 
             <!-- Sync Settings -->
             <div class="settings-group">
-                <h3>Remote Sync</h3>
+                <h3 data-i18n="settings.sync.title">Remote Sync</h3>
                 <label>
-                    <span>Server URL</span>
-                    <input type="url" id="syncServerUrl" placeholder="https://kat.example.com">
+                    <span data-i18n="settings.sync.serverUrl">Server URL</span>
+                    <input type="url" id="syncServerUrl" data-i18n-placeholder="settings.sync.serverUrlPlaceholder" placeholder="https://kat.example.com">
                 </label>
                 <label>
-                    <span>API Token</span>
-                    <input type="password" id="syncToken" placeholder="Paste token here...">
+                    <span data-i18n="settings.sync.apiToken">API Token</span>
+                    <input type="password" id="syncToken" data-i18n-placeholder="settings.sync.apiTokenPlaceholder" placeholder="Paste token here...">
                     <small id="syncTokenStatus" class="sync-token-status">No token configured</small>
                 </label>
                 <label class="toggle-row">
-                    <span>Auto-sync when online</span>
+                    <span data-i18n="settings.sync.autoSync">Auto-sync when online</span>
                     <input type="checkbox" id="autoSyncToggle">
                 </label>
                 <div class="sync-actions">
-                    <button id="testSyncBtn" class="btn btn-small">Test Connection</button>
-                    <button id="syncNowBtn" class="btn btn-small">Sync Now</button>
+                    <button id="testSyncBtn" class="btn btn-small" data-i18n="buttons.testConnection">Test Connection</button>
+                    <button id="syncNowBtn" class="btn btn-small" data-i18n="buttons.syncNow">Sync Now</button>
                 </div>
                 <div id="syncStatus" class="sync-status">
                     <span id="pendingCount">0 pending</span>
@@ -307,15 +311,15 @@
 
             <!-- App Version -->
             <div class="settings-group">
-                <h3>App Version</h3>
+                <h3 data-i18n="settings.version.title">App Version</h3>
                 <div class="version-info">
-                    <span>Current version:</span>
+                    <span data-i18n="settings.version.current">Current version:</span>
                     <span id="currentVersion">-</span>
                 </div>
                 <div id="versionStatus" class="version-status"></div>
                 <div class="version-actions">
-                    <button id="checkUpdateBtn" class="btn btn-small">Check for Updates</button>
-                    <button id="updateNowBtn" class="btn btn-small hidden">Update Now</button>
+                    <button id="checkUpdateBtn" class="btn btn-small" data-i18n="buttons.checkUpdates">Check for Updates</button>
+                    <button id="updateNowBtn" class="btn btn-small hidden" data-i18n="buttons.updateNow">Update Now</button>
                 </div>
             </div>
         </div>
@@ -328,7 +332,7 @@
     <div id="plotModal" class="modal hidden">
         <div class="modal-content">
             <button class="modal-close" id="closePlotModal">×</button>
-            <img id="plotImage" src="" alt="Spectrum Plot">
+            <img id="plotImage" src="" data-i18n-alt="modals.plot.altText" alt="Spectrum Plot">
         </div>
     </div>
 
@@ -336,7 +340,7 @@
     <div id="matchesModal" class="modal hidden">
         <div class="modal-content">
             <button class="modal-close" id="closeMatchesModal">×</button>
-            <h3>Identification Matches</h3>
+            <h3 data-i18n="modals.matches.title">Identification Matches</h3>
             <div id="matchesList"></div>
         </div>
     </div>
@@ -344,8 +348,8 @@
     <!-- Filter Bay Modal -->
     <div id="filterBayModal" class="modal hidden">
         <div class="modal-content filter-bay-modal-content">
-            <p>Close the filter bay</p>
-            <button id="filterBayModalOk" class="btn btn-primary">OK</button>
+            <p data-i18n="modals.filterBay.message">Close the filter bay</p>
+            <button id="filterBayModalOk" class="btn btn-primary" data-i18n="buttons.ok">OK</button>
         </div>
     </div>
 
@@ -353,11 +357,11 @@
     <div id="startupModal" class="modal hidden">
         <div class="startup-modal-content">
             <div class="startup-spinner" aria-hidden="true"></div>
-            <h2 class="startup-title" id="startupModalTitle">Starting…</h2>
-            <p class="startup-message" id="startupModalMessage">Loading…</p>
+            <h2 class="startup-title" id="startupModalTitle" data-i18n="modals.startup.title">Starting…</h2>
+            <p class="startup-message" id="startupModalMessage" data-i18n="modals.startup.message">Loading…</p>
             <div class="startup-actions">
-                <button id="startupReloadBtn" class="btn btn-primary btn-small">Reload</button>
-                <button id="startupResetBtn" class="btn btn-small btn-danger hidden">Reset local data</button>
+                <button id="startupReloadBtn" class="btn btn-primary btn-small" data-i18n="buttons.reload">Reload</button>
+                <button id="startupResetBtn" class="btn btn-small btn-danger hidden" data-i18n="buttons.resetData">Reset local data</button>
             </div>
         </div>
     </div>
@@ -369,7 +373,7 @@
 
             <!-- History List View -->
             <div id="historyListView">
-                <h3>Test History</h3>
+                <h3 data-i18n="history.title">Test History</h3>
                 <div id="historyList" class="history-list">
                     <!-- Populated dynamically -->
                 </div>
@@ -377,40 +381,40 @@
 
             <!-- Session Detail View (hidden initially) -->
             <div id="historyDetailView" class="hidden">
-                <button class="btn btn-small history-back-btn" id="historyBackBtn">← Back</button>
-                <h3 id="historyDetailTitle">Session Details</h3>
+                <button class="btn btn-small history-back-btn" id="historyBackBtn" data-i18n="history.backToList">← Back</button>
+                <h3 id="historyDetailTitle" data-i18n="history.sessionDetails">Session Details</h3>
 
                 <div class="history-session-info">
                     <div class="history-info-row">
-                        <span class="history-label">Date:</span>
+                        <span class="history-label" data-i18n="history.date">Date:</span>
                         <span id="historyDetailDate">-</span>
                     </div>
                     <div class="history-info-row">
-                        <span class="history-label">Event:</span>
+                        <span class="history-label" data-i18n="history.event">Event:</span>
                         <span id="historyDetailEvent">-</span>
                     </div>
                     <div class="history-info-row">
-                        <span class="history-label">Substance:</span>
+                        <span class="history-label" data-i18n="history.substance">Substance:</span>
                         <span id="historyDetailSubstance">-</span>
                     </div>
                     <div class="history-info-row">
-                        <span class="history-label">Appearance:</span>
+                        <span class="history-label" data-i18n="history.appearance">Appearance:</span>
                         <span id="historyDetailAppearance">-</span>
                     </div>
                     <div class="history-info-row hidden" id="historyNotesRow">
-                        <span class="history-label">Notes:</span>
+                        <span class="history-label" data-i18n="history.notes">Notes:</span>
                         <span id="historyDetailNotes">-</span>
                     </div>
                 </div>
 
-                <h4>Acquisitions (<span id="historyAcquisitionCount">0</span>)</h4>
+                <h4><span data-i18n="history.acquisitions">Acquisitions</span> (<span id="historyAcquisitionCount">0</span>)</h4>
                 <div id="historyGalleryContainer" class="gallery-container">
                     <!-- Populated dynamically -->
                 </div>
 
                 <!-- Selected acquisition result (read-only) -->
                 <div id="historyResultSection" class="results-section hidden">
-                    <h3>Result</h3>
+                    <h3 data-i18n="step3.results.title">Result</h3>
                     <div class="result-card">
                         <img id="historyResultThumb" src="" alt="Result" class="result-thumb">
                         <div class="result-info">
@@ -420,9 +424,9 @@
                         </div>
                     </div>
                     <div class="result-actions">
-                        <button id="historyViewPlotBtn" class="btn btn-small">View Summary</button>
-                        <button id="historyViewMatchesBtn" class="btn btn-small hidden">View Matches</button>
-                        <button id="historyDownloadCsvBtn" class="btn btn-small">Download CSV</button>
+                        <button id="historyViewPlotBtn" class="btn btn-small" data-i18n="buttons.viewSummary">View Summary</button>
+                        <button id="historyViewMatchesBtn" class="btn btn-small hidden" data-i18n="buttons.viewMatches">View Matches</button>
+                        <button id="historyDownloadCsvBtn" class="btn btn-small" data-i18n="buttons.downloadCsv">Download CSV</button>
                     </div>
                 </div>
             </div>
@@ -433,12 +437,12 @@
     <div id="helpModal" class="modal hidden">
         <div class="modal-content help-modal-content">
             <button class="modal-close" id="closeHelpModal">×</button>
-            <h3>Help Guide</h3>
+            <h3 data-i18n="help.title">Help Guide</h3>
 
             <!-- Tab Navigation -->
             <div class="help-tabs">
-                <button class="help-tab active" data-tab="workflow">Workflow</button>
-                <button class="help-tab" data-tab="troubleshooting">Troubleshooting</button>
+                <button class="help-tab active" data-tab="workflow" data-i18n="help.tabs.workflow">Workflow</button>
+                <button class="help-tab" data-tab="troubleshooting" data-i18n="help.tabs.troubleshooting">Troubleshooting</button>
             </div>
 
             <!-- Tab Content -->
@@ -541,10 +545,11 @@
         </div>
     </div>
 
-    <!-- App modules (order matters: db -> identifier -> sync -> app) -->
+    <!-- App modules (order matters: db -> identifier -> sync -> i18n -> app) -->
     <script src="js/db.js"></script>
     <script src="js/identifier.js"></script>
     <script src="js/sync.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@
  * handles caching. This service worker is for direct GitHub Pages access.
  */
 
-const CACHE_NAME = 'spettromiao-mobile-v2';
+const CACHE_NAME = 'spettromiao-mobile-v3';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -14,9 +14,12 @@ const STATIC_ASSETS = [
     './js/db.js',
     './js/identifier.js',
     './js/sync.js',
+    './js/i18n.js',
     './js/app.js',
     './manifest.json',
     './data/library.json',
+    './locales/en.json',
+    './locales/it.json',
 ];
 
 // Install event - cache static assets

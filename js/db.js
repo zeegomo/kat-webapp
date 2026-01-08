@@ -597,6 +597,7 @@ async function getSettings() {
                 syncServerUrl: '',
                 syncToken: '',
                 autoSync: false,
+                language: 'en',
                 cameraSettings: {
                     shutter: 5.0,
                     gain: 100,

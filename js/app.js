@@ -246,6 +246,10 @@ const elements = {
     historyViewPlotBtn: document.getElementById('historyViewPlotBtn'),
     historyViewMatchesBtn: document.getElementById('historyViewMatchesBtn'),
     historyDownloadCsvBtn: document.getElementById('historyDownloadCsvBtn'),
+
+    // Language
+    langBtn: document.getElementById('langBtn'),
+    langCode: document.getElementById('langCode'),
 };
 
 // ============================================================================
@@ -254,31 +258,31 @@ const elements = {
 
 const TROUBLESHOOTING_TIPS = {
     photoSave: {
-        tip: 'Check if browser storage is full. Try removing old tests from History.',
+        tipKey: 'errors.photoSave.tip',
         section: 'save'
     },
     captureTimeout: {
-        tip: 'Try restarting the spectrometer. If problem persists, reduce shutter time.',
+        tipKey: 'errors.captureTimeout.tip',
         section: 'capture'
     },
     captureSaveFailed: {
-        tip: 'Storage may be full. Export current data and clear old tests.',
+        tipKey: 'errors.captureSaveFailed.tip',
         section: 'save'
     },
     captureFailed: {
-        tip: 'Ensure spectrometer is connected and filter bay is closed.',
+        tipKey: 'errors.captureFailed.tip',
         section: 'capture'
     },
     captureError: {
-        tip: 'Check spectrometer connection. If camera is stuck, restart the device.',
+        tipKey: 'errors.captureError.tip',
         section: 'capture'
     },
     exportFailed: {
-        tip: 'Ensure you have enough storage space. Try exporting fewer acquisitions.',
+        tipKey: 'errors.exportFailed.tip',
         section: 'save'
     },
     sessionFailed: {
-        tip: 'Browser storage may be corrupted. Try clearing old tests or reset in Settings.',
+        tipKey: 'errors.sessionFailed.tip',
         section: 'save'
     }
 };
@@ -286,7 +290,8 @@ const TROUBLESHOOTING_TIPS = {
 function showEnhancedAlert(baseMessage, tipKey) {
     const troubleInfo = TROUBLESHOOTING_TIPS[tipKey];
     if (troubleInfo) {
-        const fullMessage = `${baseMessage}\n\nTip: ${troubleInfo.tip}\n\n[See Help > Troubleshooting for details]`;
+        const tip = i18n.t(troubleInfo.tipKey);
+        const fullMessage = `${baseMessage}\n\nTip: ${tip}\n\n[See Help > Troubleshooting for details]`;
         alert(fullMessage);
     } else {
         alert(baseMessage);
@@ -735,7 +740,7 @@ async function handleSubstancePhotoSelect(event) {
         showSubstancePhotoPreview(blob);
     } catch (error) {
         console.error('Failed to save substance photo:', error);
-        showEnhancedAlert('Failed to save photo: ' + error.message, 'photoSave');
+        showEnhancedAlert(i18n.t('errors.photoSave.message', { error: error.message }), 'photoSave');
     }
 
     // Reset input so same file can be selected again
@@ -805,7 +810,7 @@ async function compressImage(file, { maxWidth = 1200, quality = 0.8 } = {}) {
                     if (blob) {
                         resolve(blob);
                     } else {
-                        reject(new Error('Failed to compress image'));
+                        reject(new Error(i18n.t('errors.imageCompress')));
                     }
                 },
                 'image/jpeg',
@@ -815,7 +820,7 @@ async function compressImage(file, { maxWidth = 1200, quality = 0.8 } = {}) {
 
         img.onerror = () => {
             URL.revokeObjectURL(url);
-            reject(new Error('Failed to load image'));
+            reject(new Error(i18n.t('errors.imageLoad')));
         };
 
         img.src = url;
@@ -910,7 +915,7 @@ async function startPreview() {
 
         if (response.status === 'error') {
             console.error('Backend error:', response.message);
-            elements.previewStatus.textContent = `Error: ${response.message}`;
+            elements.previewStatus.textContent = i18n.t('preview.error', { message: response.message });
             return;
         }
 
@@ -919,7 +924,7 @@ async function startPreview() {
         // Add error handler for stream loading failures
         elements.previewImage.onerror = (e) => {
             console.error('Preview stream error:', e);
-            elements.previewStatus.textContent = 'Stream failed to load';
+            elements.previewStatus.textContent = i18n.t('preview.streamFailed');
             resetPreviewUI();
         };
 
@@ -935,7 +940,7 @@ async function startPreview() {
         pollPreviewStatus();
     } catch (error) {
         console.error('Failed to start preview:', error);
-        elements.previewStatus.textContent = `Error: ${error.message}`;
+        elements.previewStatus.textContent = i18n.t('preview.error', { message: error.message });
         resetPreviewUI();
     } finally {
         state.startingPreview = false;
@@ -963,11 +968,11 @@ function resetPreviewUI() {
 }
 
 function getExposureInfo(exp_us) {
-    if (exp_us < 3000) return { text: 'Perfect', class: 'exp-perfect' };
-    if (exp_us < 6000) return { text: 'Good', class: 'exp-good' };
-    if (exp_us < 10000) return { text: 'OK', class: 'exp-ok' };
-    if (exp_us < 20000) return { text: 'Meh', class: 'exp-meh' };
-    return { text: 'Bad', class: 'exp-bad' };
+    if (exp_us < 3000) return { text: i18n.t('step3.exposure.perfect'), class: 'exp-perfect' };
+    if (exp_us < 6000) return { text: i18n.t('step3.exposure.good'), class: 'exp-good' };
+    if (exp_us < 10000) return { text: i18n.t('step3.exposure.ok'), class: 'exp-ok' };
+    if (exp_us < 20000) return { text: i18n.t('step3.exposure.meh'), class: 'exp-meh' };
+    return { text: i18n.t('step3.exposure.bad'), class: 'exp-bad' };
 }
 
 async function pollPreviewStatus() {
@@ -978,16 +983,21 @@ async function pollPreviewStatus() {
         console.log('Preview status:', status);
         if (status.streaming) {
             const expInfo = getExposureInfo(status.exposure_us);
-            elements.previewStatus.innerHTML = `${status.fps} FPS<br><span class="${expInfo.class}">${status.exposure_us}μs (${expInfo.text})</span>`;
+            elements.previewStatus.innerHTML = i18n.t('preview.status', {
+                fps: status.fps,
+                class: expInfo.class,
+                exposure: status.exposure_us,
+                quality: expInfo.text
+            });
         } else {
             console.warn('Stream stopped unexpectedly');
-            elements.previewStatus.textContent = 'Stream stopped';
+            elements.previewStatus.textContent = i18n.t('preview.streamStopped');
             resetPreviewUI();
             return;  // Stop polling
         }
     } catch (error) {
         console.error('Status poll error:', error);
-        elements.previewStatus.textContent = 'Connection error';
+        elements.previewStatus.textContent = i18n.t('preview.connectionError');
         resetPreviewUI();
         return;  // Stop polling
     }
@@ -1002,7 +1012,7 @@ function updateCalibrationUI(status) {
     const allOk = camera_calibration && wavelength_calibration;
 
     elements.calibrationStatus.className = 'calibration-status ' + (allOk ? 'ok' : 'missing');
-    elements.calibrationStatus.textContent = `Camera: ${camera_calibration ? 'OK' : 'Missing'} | Wavelength: ${wavelength_calibration ? 'OK' : 'Missing'}`;
+    elements.calibrationStatus.textContent = `${i18n.t('step2.status.camera')}: ${camera_calibration ? i18n.t('step2.status.ok') : i18n.t('step2.status.missing')} | ${i18n.t('step2.status.wavelength')}: ${wavelength_calibration ? i18n.t('step2.status.ok') : i18n.t('step2.status.missing')}`;
 }
 
 async function loadCalibrationStatus() {
@@ -1035,9 +1045,9 @@ function handleFilterBayModalOk() {
 function updateSettingsUI() {
     const cameraSettings = state.settings?.cameraSettings || {};
     elements.shutterSlider.value = cameraSettings.shutter || 5.0;
-    elements.shutterDisplay.textContent = `${(cameraSettings.shutter || 5.0).toFixed(1)}s`;
+    elements.shutterDisplay.textContent = i18n.t('step3.shutter.display', { value: (cameraSettings.shutter || 5.0).toFixed(1) });
     elements.gainSlider.value = cameraSettings.gain || 100;
-    elements.gainDisplay.textContent = `gain ${Math.round(cameraSettings.gain || 100)}`;
+    elements.gainDisplay.textContent = i18n.t('step3.gain.display', { value: Math.round(cameraSettings.gain || 100) });
     elements.laserAutoDetect.checked = cameraSettings.laserAutoDetect !== false;
     elements.laserWavelength.value = cameraSettings.laserWavelength || 785;
     updateLaserWavelengthVisibility();
@@ -1086,7 +1096,7 @@ async function capture() {
     elements.captureBtn.disabled = true;
     elements.progressContainer.classList.remove('hidden');
     elements.progressFill.style.width = '0%';
-    elements.progressText.textContent = 'Starting...';
+    elements.progressText.textContent = i18n.t('step3.progress.starting');
 
     const shutterTime = state.settings?.cameraSettings?.shutter || 5.0;
     const timeoutMs = (shutterTime + 60) * 1000;  // exposure + 25s Pi overhead + 35s safety margin
@@ -1106,7 +1116,7 @@ async function capture() {
         elements.progressFill.style.width = `${currentProgress}%`;
 
         const remaining = Math.max(0, estimatedCaptureTime - (elapsed / 1000));
-        elements.progressText.textContent = `Capturing... ${remaining.toFixed(1)}s`;
+        elements.progressText.textContent = i18n.t('step3.progress.capturing', { time: remaining.toFixed(1) });
     }, 100);
 
     const controller = new AbortController();
@@ -1131,7 +1141,7 @@ async function capture() {
         clearInterval(exposureTimer);
 
         if (error.name === 'AbortError') {
-            captureError('Capture timed out - camera may be stuck', 'captureTimeout');
+            captureError(i18n.t('capture.timeout'), 'captureTimeout');
         } else {
             captureError(error.message);
         }
@@ -1220,10 +1230,10 @@ async function captureComplete(result) {
 
         } catch (error) {
             console.error('Failed to store acquisition:', error);
-            showEnhancedAlert('Capture succeeded but failed to save: ' + error.message, 'captureSaveFailed');
+            showEnhancedAlert(i18n.t('capture.saveFailed', { error: error.message }), 'captureSaveFailed');
         }
     } else {
-        showEnhancedAlert('Capture failed: ' + (result.error || 'Unknown error'), 'captureFailed');
+        showEnhancedAlert(i18n.t('capture.failed', { error: result.error || 'Unknown error' }), 'captureFailed');
     }
 }
 
@@ -1231,13 +1241,13 @@ function captureError(message, tipKey = 'captureError') {
     state.capturing = false;
     elements.captureBtn.disabled = false;
     elements.progressContainer.classList.add('hidden');
-    showEnhancedAlert('Capture error: ' + message, tipKey);
+    showEnhancedAlert(i18n.t('capture.error', { message }), tipKey);
 }
 
 function getConfidenceText(score) {
-    if (score >= 0.90) return 'High confidence';
-    if (score >= 0.70) return 'Moderate confidence';
-    return 'Low confidence';
+    if (score >= 0.90) return i18n.t('step3.results.confidence.high');
+    if (score >= 0.70) return i18n.t('step3.results.confidence.moderate');
+    return i18n.t('step3.results.confidence.low');
 }
 
 function getConfidenceClass(score) {
@@ -1266,8 +1276,8 @@ async function updateResultUI(acquisition, identification) {
     elements.resultTime.textContent = formatTime(acquisition.timestamp);
 
     if (acquisition.laserWavelength) {
-        const modeText = acquisition.detectionMode === 'auto' ? 'detected' : 'manual';
-        elements.resultTime.textContent += ` | ${acquisition.laserWavelength.toFixed(1)}nm (${modeText})`;
+        const modeKey = acquisition.detectionMode === 'auto' ? 'step3.results.wavelength.detected' : 'step3.results.wavelength.manual';
+        elements.resultTime.textContent += ` | ${i18n.t(modeKey, { value: acquisition.laserWavelength.toFixed(1) })}`;
     }
 
     if (identification && identification.length > 0) {
@@ -1282,7 +1292,7 @@ async function updateResultUI(acquisition, identification) {
 
         // Display top match with count of similar matches
         if (closeMatchCount > 0) {
-            elements.resultSubstance.textContent = `${top.substance} (+${closeMatchCount} similar)`;
+            elements.resultSubstance.textContent = i18n.t('step3.results.withSimilar', { substance: top.substance, count: closeMatchCount });
         } else {
             elements.resultSubstance.textContent = top.substance;
         }
@@ -1292,8 +1302,8 @@ async function updateResultUI(acquisition, identification) {
         elements.resultScore.textContent = `${top.score.toFixed(3)} | ${confidenceText}`;
         elements.resultScore.className = `result-score ${confidenceClass}`;
     } else {
-        elements.resultSubstance.textContent = 'Unknown';
-        elements.resultScore.textContent = 'score: N/A';
+        elements.resultSubstance.textContent = i18n.t('step3.results.unknown');
+        elements.resultScore.textContent = i18n.t('step3.results.scoreNA');
         elements.resultScore.className = 'result-score';
     }
 
@@ -1373,10 +1383,10 @@ function toggleGallery() {
 
 async function updateGalleryUI() {
     const acquisitions = state.acquisitions || [];
-    elements.galleryCount.textContent = `(${acquisitions.length})`;
+    elements.galleryCount.textContent = i18n.t('step3.gallery.count', { count: acquisitions.length });
 
     if (acquisitions.length === 0) {
-        elements.galleryContainer.innerHTML = '<div class="gallery-empty">No acquisitions yet</div>';
+        elements.galleryContainer.innerHTML = `<div class="gallery-empty">${i18n.t('step3.gallery.noAcquisitions')}</div>`;
         return;
     }
 
@@ -1507,7 +1517,7 @@ async function loadHistoryList() {
     const sessions = await db.listSessions();
 
     if (sessions.length === 0) {
-        elements.historyList.innerHTML = '<div class="history-list-empty">No test history yet</div>';
+        elements.historyList.innerHTML = `<div class="history-list-empty">${i18n.t('history.noSessions')}</div>`;
         return;
     }
 
@@ -1533,12 +1543,12 @@ async function loadHistoryList() {
         return `
             <div class="history-item ${isCurrent ? 'history-item-current' : ''}" data-session-id="${session.id}">
                 <div class="history-item-header">
-                    <span class="history-item-event">${escapeHtml(session.event || 'Unnamed')}</span>
+                    <span class="history-item-event">${escapeHtml(session.event || i18n.t('history.unnamed'))}</span>
                     <span class="history-item-date">${dateStr}</span>
                 </div>
                 <div class="history-item-details">
-                    <span class="history-item-substance">${escapeHtml(session.substance || '-')}</span>
-                    <span>${acquisitionCount} acquisition${acquisitionCount !== 1 ? 's' : ''}</span>
+                    <span class="history-item-substance">${escapeHtml(session.substance || i18n.t('history.placeholder'))}</span>
+                    <span>${acquisitionCount} ${acquisitionCount !== 1 ? i18n.t('history.countPlural') : i18n.t('history.countSingular')}</span>
                     ${topMatch ? `<span class="history-item-match ${confidenceClass}">${escapeHtml(topMatch)} (${topScore.toFixed(2)})</span>` : ''}
                     ${isCurrent ? '<span class="history-item-current-badge">(current)</span>' : ''}
                 </div>
@@ -1569,13 +1579,13 @@ async function viewHistorySession(sessionId) {
     state.historyCurrentAcquisition = null;
 
     // Populate session info
-    elements.historyDetailTitle.textContent = session.event || 'Unnamed Test';
+    elements.historyDetailTitle.textContent = session.event || i18n.t('history.unnamedTest');
     elements.historyDetailDate.textContent = formatHistoryDate(session.createdAt);
-    elements.historyDetailEvent.textContent = session.event || '-';
-    elements.historyDetailSubstance.textContent = session.substance || '-';
+    elements.historyDetailEvent.textContent = session.event || i18n.t('history.placeholder');
+    elements.historyDetailSubstance.textContent = session.substance || i18n.t('history.placeholder');
 
     // Format appearance
-    let appearanceText = session.appearance || '-';
+    let appearanceText = session.appearance || i18n.t('history.placeholder');
     if (session.appearance === 'other' && session.customAppearance) {
         appearanceText = session.customAppearance;
     }
@@ -1605,7 +1615,7 @@ async function updateHistoryGalleryUI() {
     const acquisitions = state.historyAcquisitions;
 
     if (acquisitions.length === 0) {
-        elements.historyGalleryContainer.innerHTML = '<div class="gallery-empty">No acquisitions</div>';
+        elements.historyGalleryContainer.innerHTML = `<div class="gallery-empty">${i18n.t('history.noAcquisitions')}</div>`;
         return;
     }
 
@@ -1656,8 +1666,8 @@ async function showHistoryAcquisition(idx) {
     elements.historyResultTime.textContent = formatTime(acquisition.timestamp);
 
     if (acquisition.laserWavelength) {
-        const modeText = acquisition.detectionMode === 'auto' ? 'detected' : 'manual';
-        elements.historyResultTime.textContent += ` | ${acquisition.laserWavelength.toFixed(1)}nm (${modeText})`;
+        const modeKey = acquisition.detectionMode === 'auto' ? 'step3.results.wavelength.detected' : 'step3.results.wavelength.manual';
+        elements.historyResultTime.textContent += ` | ${i18n.t(modeKey, { value: acquisition.laserWavelength.toFixed(1) })}`;
     }
 
     const identification = acquisition.identification;
@@ -1672,7 +1682,7 @@ async function showHistoryAcquisition(idx) {
             .length;
 
         if (closeMatchCount > 0) {
-            elements.historyResultSubstance.textContent = `${top.substance} (+${closeMatchCount} similar)`;
+            elements.historyResultSubstance.textContent = i18n.t('step3.results.withSimilar', { substance: top.substance, count: closeMatchCount });
         } else {
             elements.historyResultSubstance.textContent = top.substance;
         }
@@ -1682,8 +1692,8 @@ async function showHistoryAcquisition(idx) {
         elements.historyResultScore.textContent = `${top.score.toFixed(3)} | ${confidenceText}`;
         elements.historyResultScore.className = `result-score ${confidenceClass}`;
     } else {
-        elements.historyResultSubstance.textContent = 'Unknown';
-        elements.historyResultScore.textContent = 'score: N/A';
+        elements.historyResultSubstance.textContent = i18n.t('step3.results.unknown');
+        elements.historyResultScore.textContent = i18n.t('step3.results.scoreNA');
         elements.historyResultScore.className = 'result-score';
     }
 
@@ -1701,7 +1711,7 @@ async function showHistoryAcquisition(idx) {
 }
 
 function formatHistoryDate(isoString) {
-    if (!isoString) return '-';
+    if (!isoString) return i18n.t('history.placeholder');
     const date = new Date(isoString);
     return date.toLocaleDateString(undefined, {
         year: 'numeric',
@@ -1844,7 +1854,7 @@ function buildZipBlob(entries) {
 
 async function exportTest() {
     if (state.acquisitions.length === 0) {
-        alert('No acquisitions to export');
+        alert(i18n.t('errors.noAcquisitionsToExport'));
         return;
     }
 
@@ -1944,12 +1954,12 @@ async function exportTest() {
 
     } catch (error) {
         console.error('Export failed:', error);
-        showEnhancedAlert('Export failed: ' + error.message, 'exportFailed');
+        showEnhancedAlert(i18n.t('errors.exportFailed.message', { error: error.message }), 'exportFailed');
     }
 }
 
 async function newTest() {
-    if (!confirm('Start a new test? Current data will remain stored.')) return;
+    if (!confirm(i18n.t('confirmations.newTest'))) return;
 
     try {
         // Create new session
@@ -1970,7 +1980,7 @@ async function newTest() {
 
     } catch (error) {
         console.error('Failed to create new session:', error);
-        showEnhancedAlert('Failed to create new session', 'sessionFailed');
+        showEnhancedAlert(i18n.t('errors.sessionFailed.message'), 'sessionFailed');
     }
 }
 
@@ -2085,10 +2095,10 @@ function updateSyncSettingsUI() {
     if (elements.syncTokenStatus) {
         if (state.settings?.syncToken) {
             const preview = state.settings.syncToken.substring(0, 8);
-            elements.syncTokenStatus.textContent = `Token configured: ${preview}...`;
+            elements.syncTokenStatus.textContent = i18n.t('settings.sync.tokenStatus.configured', { preview });
             elements.syncTokenStatus.className = 'sync-token-status configured';
         } else {
-            elements.syncTokenStatus.textContent = 'No token configured';
+            elements.syncTokenStatus.textContent = i18n.t('settings.sync.tokenStatus.notConfigured');
             elements.syncTokenStatus.className = 'sync-token-status not-configured';
         }
     }
@@ -2112,7 +2122,7 @@ function updateSyncIndicator() {
 
     // Update pending count display
     if (elements.pendingCount) {
-        elements.pendingCount.textContent = `${pending} pending`;
+        elements.pendingCount.textContent = i18n.t('settings.sync.pending', { count: pending });
     }
 }
 
@@ -2132,7 +2142,7 @@ async function saveSyncSettings() {
         await db.updateSettings(updates);
         state.settings = await db.getSettings();
         updateSyncSettingsUI();
-        showSyncFeedback('Settings saved', 'success');
+        showSyncFeedback(i18n.t('settings.sync.saved'), 'success');
 
         // Start/stop background sync
         if (state.settings.autoSync && state.settings.syncServerUrl && state.settings.syncToken) {
@@ -2143,23 +2153,23 @@ async function saveSyncSettings() {
 
     } catch (error) {
         console.error('Failed to save sync settings:', error);
-        showSyncFeedback('Failed to save', 'error');
+        showSyncFeedback(i18n.t('settings.sync.saveFailed'), 'error');
     }
 }
 
 async function testSyncConnection() {
-    showSyncFeedback('Testing...', 'syncing');
+    showSyncFeedback(i18n.t('settings.sync.testing'), 'syncing');
     elements.testSyncBtn.disabled = true;
 
     try {
         const result = await sync.testConnection();
         if (result.success) {
-            showSyncFeedback('Connection successful!', 'success');
+            showSyncFeedback(i18n.t('settings.sync.connectionSuccess'), 'success');
         } else {
-            showSyncFeedback(result.error || 'Connection failed', 'error');
+            showSyncFeedback(result.error || i18n.t('settings.sync.connectionFailed'), 'error');
         }
     } catch (error) {
-        showSyncFeedback('Connection failed', 'error');
+        showSyncFeedback(i18n.t('settings.sync.connectionFailed'), 'error');
     } finally {
         elements.testSyncBtn.disabled = false;
     }
@@ -2170,7 +2180,7 @@ async function syncNow() {
 
     state.syncStatus.syncing = true;
     updateSyncIndicator();
-    showSyncFeedback('Syncing...', 'syncing');
+    showSyncFeedback(i18n.t('settings.syncing.inProgress'), 'syncing');
     elements.syncNowBtn.disabled = true;
 
     try {
@@ -2180,13 +2190,13 @@ async function syncNow() {
         // Then sync all pending
         const result = await sync.syncAll();
         if (result.errors?.length > 0) {
-            showSyncFeedback(`Synced: ${result.synced}, Failed: ${result.failed}`, 'error');
+            showSyncFeedback(i18n.t('settings.syncing.completeWithErrors', { synced: result.synced, failed: result.failed }), 'error');
         } else {
-            showSyncFeedback(`Synced: ${result.synced}`, 'success');
+            showSyncFeedback(i18n.t('settings.syncing.complete', { synced: result.synced }), 'success');
         }
         await loadSyncStatus();
     } catch (error) {
-        showSyncFeedback(error.message || 'Sync failed', 'error');
+        showSyncFeedback(error.message || i18n.t('settings.syncing.failed'), 'error');
     } finally {
         state.syncStatus.syncing = false;
         updateSyncIndicator();
@@ -2203,7 +2213,7 @@ function showSyncFeedback(message, type) {
     // Reset after 3 seconds
     if (type !== 'syncing') {
         setTimeout(() => {
-            elements.syncStatusEl.textContent = `${state.syncStatus.pending} pending`;
+            elements.syncStatusEl.textContent = i18n.t('settings.sync.pending', { count: state.syncStatus.pending });
             elements.syncStatusEl.className = 'sync-status';
         }, 3000);
     }
@@ -2311,7 +2321,7 @@ function showVersionStatus(message, type) {
 }
 
 async function checkForUpdates() {
-    showVersionStatus('Checking for updates...', 'checking');
+    showVersionStatus(i18n.t('settings.version.checking'), 'checking');
     elements.checkUpdateBtn.disabled = true;
     elements.updateNowBtn.classList.add('hidden');
 
@@ -2321,34 +2331,34 @@ async function checkForUpdates() {
             fetchRemoteVersion()
         ]);
 
-        elements.currentVersion.textContent = currentVersion || 'unknown';
+        elements.currentVersion.textContent = currentVersion || i18n.t('settings.version.unknown');
 
         if (!remoteVersion) {
-            showVersionStatus('Could not check for updates', 'error');
+            showVersionStatus(i18n.t('settings.version.couldNotCheck'), 'error');
             return;
         }
 
         remoteVersionCache = remoteVersion;
 
         if (!currentVersion) {
-            showVersionStatus(`Update available: ${remoteVersion}`, 'update-available');
+            showVersionStatus(i18n.t('settings.version.available', { version: remoteVersion }), 'update-available');
             elements.updateNowBtn.classList.remove('hidden');
         } else if (currentVersion === remoteVersion) {
-            showVersionStatus('Up to date', 'up-to-date');
+            showVersionStatus(i18n.t('settings.version.upToDate'), 'up-to-date');
         } else {
-            showVersionStatus(`Update available: ${remoteVersion}`, 'update-available');
+            showVersionStatus(i18n.t('settings.version.available', { version: remoteVersion }), 'update-available');
             elements.updateNowBtn.classList.remove('hidden');
         }
     } catch (error) {
         console.error('Error checking for updates:', error);
-        showVersionStatus('Could not check for updates', 'error');
+        showVersionStatus(i18n.t('settings.version.couldNotCheck'), 'error');
     } finally {
         elements.checkUpdateBtn.disabled = false;
     }
 }
 
 async function triggerUpdate() {
-    showVersionStatus('Downloading update...', 'checking');
+    showVersionStatus(i18n.t('settings.version.downloading'), 'checking');
     elements.updateNowBtn.disabled = true;
     elements.checkUpdateBtn.disabled = true;
 
@@ -2393,13 +2403,13 @@ async function triggerUpdate() {
             });
         }
 
-        showVersionStatus('Applying update...', 'checking');
+        showVersionStatus(i18n.t('settings.version.applying'), 'checking');
 
         // Render the new version immediately
         renderAppFromFiles(files);
     } catch (error) {
         console.error('Error triggering update:', error);
-        showVersionStatus('Update failed: ' + error.message, 'error');
+        showVersionStatus(i18n.t('settings.version.failed', { error: error.message }), 'error');
         elements.updateNowBtn.disabled = false;
         elements.checkUpdateBtn.disabled = false;
     }
@@ -2566,13 +2576,13 @@ function setupEventListeners() {
 
     elements.shutterSlider.addEventListener('input', () => {
         const value = parseFloat(elements.shutterSlider.value);
-        elements.shutterDisplay.textContent = `${value.toFixed(1)}s`;
+        elements.shutterDisplay.textContent = i18n.t('step3.shutter.display', { value: value.toFixed(1) });
     });
     elements.shutterSlider.addEventListener('change', saveSettings);
 
     elements.gainSlider.addEventListener('input', () => {
         const value = Math.round(parseFloat(elements.gainSlider.value));
-        elements.gainDisplay.textContent = `gain ${value}`;
+        elements.gainDisplay.textContent = i18n.t('step3.gain.display', { value });
     });
     elements.gainSlider.addEventListener('change', saveSettings);
 
@@ -2650,6 +2660,14 @@ function setupEventListeners() {
     elements.checkUpdateBtn.addEventListener('click', checkForUpdates);
     elements.updateNowBtn.addEventListener('click', triggerUpdate);
 
+    // Language switcher
+    elements.langBtn.addEventListener('click', async () => {
+        const newLang = i18n.currentLang === 'en' ? 'it' : 'en';
+        await i18n.setLanguage(newLang);
+        // Update button display
+        elements.langCode.textContent = newLang.toUpperCase();
+    });
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', cleanupBlobUrls);
 }
@@ -2661,8 +2679,8 @@ function setupEventListeners() {
 let startupModalDelayTimer = null;
 let startupModalVisible = false;
 let startupModalListenersBound = false;
-let startupStatusTitle = 'Starting…';
-let startupStatusMessage = 'Loading…';
+let startupStatusTitle = null;
+let startupStatusMessage = null;
 
 function setStartupStatus(message, title = startupStatusTitle) {
     startupStatusTitle = title;
@@ -2688,7 +2706,7 @@ function showStartupModal({
     // Fallback: if modal isn't available (e.g., mismatched cached HTML), use alert.
     if (!elements.startupModal || !elements.startupModalTitle || !elements.startupModalMessage) {
         const combined = [title, message].filter(Boolean).join('\n\n');
-        alert(combined || 'Startup error');
+        alert(combined || i18n.t('modals.startup.error'));
         return;
     }
 
@@ -2736,7 +2754,7 @@ function deleteIndexedDbDatabase(name) {
 
 async function resetLocalData() {
     const confirmed = confirm(
-        'Reset local data on this device?\n\nThis deletes saved tests and settings, but does not affect the spectrometer.'
+        i18n.t('confirmations.resetData')
     );
     if (!confirmed) return;
 
@@ -2806,7 +2824,7 @@ function installGlobalErrorHandlers() {
 
         const message = event?.error?.message || event?.message || 'Unknown error';
         showStartupModal({
-            title: 'Startup error',
+            title: i18n.t('modals.startup.error'),
             message,
             showReset: true,
         });
@@ -2821,7 +2839,7 @@ function installGlobalErrorHandlers() {
 
         const message = event?.reason?.message || String(event.reason) || 'Unknown error';
         showStartupModal({
-            title: 'Startup error',
+            title: i18n.t('modals.startup.error'),
             message,
             showReset: true,
         });
@@ -2839,9 +2857,17 @@ async function init() {
     setupStartupModalEventListeners();
     registerServiceWorkerInBackground();
 
+    // Initialize i18n first (before any i18n.t() calls)
+    await i18n.init();
+
+    // Initialize language button display
+    if (elements.langCode) {
+        elements.langCode.textContent = i18n.currentLang.toUpperCase();
+    }
+
     try {
         // Show a modal only if startup is slow (avoids flicker on fast loads).
-        setStartupStatus('Opening local storage…', 'Starting…');
+        setStartupStatus(i18n.t('modals.startup.openingStorage'), i18n.t('modals.startup.title'));
         scheduleStartupModal();
 
         // Default to "disconnected" UI until proven connected.
@@ -2858,11 +2884,11 @@ async function init() {
         // Start Pi connectivity monitoring (non-overlapping polling)
         startPiConnectivityMonitoring();
 
-        setStartupStatus('Loading settings…');
+        setStartupStatus(i18n.t('modals.startup.loadingSettings'));
         await loadSettings();
         setTheme(state.settings?.theme !== 'light');
 
-        setStartupStatus('Loading saved tests…');
+        setStartupStatus(i18n.t('modals.startup.loadingSessions'));
         await loadSession();
 
         await loadSyncStatus();
@@ -2905,7 +2931,7 @@ async function init() {
     } catch (error) {
         console.error('App initialization failed:', error);
         showStartupModal({
-            title: 'Startup failed',
+            title: i18n.t('modals.startup.failed'),
             message: error?.message || String(error),
             showReset: true,
         });

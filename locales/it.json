@@ -1,0 +1,379 @@
+{
+  "app": {
+    "title": "spettromiao",
+    "description": "spettromiao - Spettrometro Raman Mobile"
+  },
+  "header": {
+    "syncStatus": "Stato sincronizzazione",
+    "history": "Cronologia",
+    "historyTitle": "Sfoglia cronologia",
+    "help": "Aiuto",
+    "settings": "Impostazioni",
+    "language": "Lingua"
+  },
+  "warnings": {
+    "piNotConnected": "Non connesso allo spettrometro",
+    "piInstructions": "Vai su Impostazioni → WiFi e connettiti a \"spettromiao\"",
+    "needHelp": "Serve aiuto?",
+    "libraryUnavailable": "Libreria di identificazione non disponibile",
+    "libraryInstructions": "L'identificazione delle sostanze non funzionerà finché la libreria non sarà caricata"
+  },
+  "wizard": {
+    "steps": {
+      "testInfo": "Info Test",
+      "calibration": "Calibrazione",
+      "capture": "Acquisizione"
+    }
+  },
+  "step1": {
+    "title": "Informazioni Test",
+    "eventName": {
+      "label": "Nome evento",
+      "placeholder": "es. Test sul Campo #42",
+      "required": "*"
+    },
+    "substance": {
+      "label": "Sostanza",
+      "placeholder": "Inizia a digitare...",
+      "required": "*"
+    },
+    "appearance": {
+      "label": "Aspetto",
+      "required": "*",
+      "selectPrompt": "-- Seleziona aspetto --",
+      "options": {
+        "powder": "Polvere",
+        "crystal": "Cristallo",
+        "liquid": "Liquido",
+        "pill": "Pillola/Compressa",
+        "capsule": "Capsula",
+        "rock": "Roccia/Pezzo",
+        "paste": "Pasta",
+        "paper": "Carta/Cartoncino",
+        "other": "Altro (specifica)"
+      }
+    },
+    "customAppearance": {
+      "label": "Aspetto personalizzato",
+      "placeholder": "Descrivi l'aspetto..."
+    },
+    "substanceDesc": {
+      "label": "Descrizione sostanza",
+      "placeholder": "Descrivi la pillola, capsula o cartoncino...",
+      "required": "*"
+    },
+    "photo": {
+      "label": "Foto della sostanza (facoltativa)",
+      "takePhoto": "Scatta Foto",
+      "remove": "Rimuovi",
+      "altText": "Foto sostanza"
+    },
+    "notes": {
+      "label": "Note (facoltative)",
+      "placeholder": "Osservazioni aggiuntive..."
+    }
+  },
+  "step2": {
+    "title": "Verifica Calibrazione",
+    "filterBayReminder": "Apri il vano filtri prima della calibrazione",
+    "instructions": "Verifica che la linea laser sia visibile e la calibrazione corretta.",
+    "preview": {
+      "cameraFeed": "Feed fotocamera",
+      "tapStart": "Tocca Avvia per iniziare",
+      "altText": "Anteprima Fotocamera"
+    },
+    "status": {
+      "checking": "Verifica calibrazione...",
+      "camera": "Fotocamera",
+      "wavelength": "Lunghezza d'onda",
+      "ok": "OK",
+      "missing": "Mancante"
+    }
+  },
+  "step3": {
+    "title": "Acquisizione Spettro",
+    "capture": "Acquisisci",
+    "shutter": {
+      "label": "Otturatore (secondi)",
+      "display": "{value}s"
+    },
+    "gain": {
+      "label": "Gain",
+      "display": "gain {value}"
+    },
+    "progress": {
+      "starting": "Avvio...",
+      "capturing": "Acquisizione... {time}s",
+      "processing": "Elaborazione..."
+    },
+    "exposure": {
+      "perfect": "Perfetto",
+      "good": "Buono",
+      "ok": "OK",
+      "meh": "Mah",
+      "bad": "Scarso"
+    },
+    "results": {
+      "title": "Risultato",
+      "unknown": "Sconosciuto",
+      "scoreNA": "punteggio: N/D",
+      "score": "{score} | {confidence}",
+      "withSimilar": "{substance} (+{count} simili)",
+      "confidence": {
+        "high": "Alta confidenza",
+        "moderate": "Media confidenza",
+        "low": "Bassa confidenza"
+      },
+      "wavelength": {
+        "detected": "{value}nm (rilevato)",
+        "manual": "{value}nm (manuale)"
+      }
+    },
+    "gallery": {
+      "title": "Galleria",
+      "count": "({count})",
+      "toggleExpand": "▶",
+      "toggleCollapse": "▼",
+      "noAcquisitions": "Nessuna acquisizione ancora"
+    }
+  },
+  "buttons": {
+    "next": "Avanti",
+    "back": "Indietro",
+    "start": "Avvia",
+    "stop": "Stop",
+    "capture": "Acquisisci",
+    "confirm": "Conferma Calibrazione",
+    "export": "Esporta",
+    "newTest": "Nuovo Test",
+    "close": "Chiudi",
+    "viewSummary": "Visualizza Riepilogo",
+    "viewMatches": "Visualizza Corrispondenze",
+    "downloadCsv": "Scarica CSV",
+    "testConnection": "Testa Connessione",
+    "syncNow": "Sincronizza Ora",
+    "checkUpdates": "Verifica Aggiornamenti",
+    "updateNow": "Aggiorna Ora",
+    "reload": "Ricarica",
+    "resetData": "Resetta dati locali",
+    "ok": "OK"
+  },
+  "preview": {
+    "error": "Errore: {message}",
+    "streamFailed": "Caricamento stream fallito",
+    "streamStopped": "Stream interrotto",
+    "connectionError": "Errore di connessione",
+    "status": "{fps} FPS<br><span class=\"{class}\">{exposure}μs ({quality})</span>"
+  },
+  "capture": {
+    "timeout": "Acquisizione scaduta - fotocamera potrebbe essere bloccata",
+    "failed": "Acquisizione fallita: {error}",
+    "error": "Errore acquisizione: {message}",
+    "saveFailed": "Acquisizione riuscita ma salvataggio fallito: {error}"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "display": {
+      "title": "Visualizzazione",
+      "darkMode": "Modalità scura"
+    },
+    "spectrum": {
+      "title": "Spettro",
+      "autoDetect": "Rileva automaticamente laser",
+      "laserWavelength": "Lunghezza d'onda laser (nm)"
+    },
+    "sync": {
+      "title": "Sincronizzazione Remota",
+      "serverUrl": "URL Server",
+      "serverUrlPlaceholder": "https://kat.example.com",
+      "apiToken": "Token API",
+      "apiTokenPlaceholder": "Incolla token qui...",
+      "tokenStatus": {
+        "configured": "Token configurato: {preview}...",
+        "notConfigured": "Nessun token configurato"
+      },
+      "autoSync": "Auto-sincronizza quando online",
+      "pending": "{count} in attesa",
+      "saved": "Impostazioni salvate",
+      "saveFailed": "Salvataggio fallito",
+      "testing": "Test in corso...",
+      "connectionSuccess": "Connessione riuscita!",
+      "connectionFailed": "Connessione fallita"
+    },
+    "syncing": {
+      "inProgress": "Sincronizzazione...",
+      "complete": "Sincronizzati: {synced}",
+      "completeWithErrors": "Sincronizzati: {synced}, Falliti: {failed}",
+      "failed": "Sincronizzazione fallita"
+    },
+    "version": {
+      "title": "Versione App",
+      "current": "Versione corrente:",
+      "unknown": "sconosciuta",
+      "checking": "Verifica aggiornamenti...",
+      "couldNotCheck": "Impossibile verificare aggiornamenti",
+      "upToDate": "Aggiornato",
+      "available": "Aggiornamento disponibile: {version}",
+      "downloading": "Download aggiornamento...",
+      "applying": "Applicazione aggiornamento...",
+      "failed": "Aggiornamento fallito: {error}"
+    }
+  },
+  "history": {
+    "title": "Cronologia Test",
+    "noSessions": "Nessuna cronologia test ancora",
+    "sessionDetails": "Dettagli Sessione",
+    "backToList": "← Indietro",
+    "date": "Data:",
+    "event": "Evento:",
+    "substance": "Sostanza:",
+    "appearance": "Aspetto:",
+    "notes": "Note:",
+    "acquisitions": "Acquisizioni",
+    "acquisitionCount": "({count})",
+    "unnamedTest": "Test Senza Nome",
+    "unnamed": "Senza nome",
+    "placeholder": "-",
+    "countSingular": "acquisizione",
+    "countPlural": "acquisizioni",
+    "noAcquisitions": "Nessuna acquisizione"
+  },
+  "modals": {
+    "plot": {
+      "altText": "Grafico Spettro"
+    },
+    "matches": {
+      "title": "Corrispondenze Identificazione"
+    },
+    "filterBay": {
+      "message": "Chiudi il vano filtri"
+    },
+    "startup": {
+      "title": "Avvio…",
+      "message": "Caricamento…",
+      "error": "Errore avvio",
+      "failed": "Avvio fallito",
+      "openingStorage": "Apertura memoria locale…",
+      "loadingSettings": "Caricamento impostazioni…",
+      "loadingSessions": "Caricamento test salvati…"
+    }
+  },
+  "help": {
+    "title": "Guida Aiuto",
+    "tabs": {
+      "workflow": "Flusso di Lavoro",
+      "troubleshooting": "Risoluzione Problemi"
+    },
+    "workflow": {
+      "step1Title": "Passo 1: Informazioni Test",
+      "step1Intro": "Inserisci i dettagli del tuo test:",
+      "step1Items": {
+        "eventName": "<strong>Nome evento:</strong> Un identificatore univoco per questa sessione di test",
+        "substance": "<strong>Sostanza:</strong> Cosa ti aspetti che sia il campione",
+        "appearance": "<strong>Aspetto:</strong> Forma fisica (polvere, cristallo, pillola, ecc.)",
+        "photo": "<strong>Foto:</strong> Richiesta per pillole, capsule e cartoncini"
+      },
+      "step2Title": "Passo 2: Calibrazione",
+      "step2Intro": "Verifica che lo spettrometro sia pronto:",
+      "step2Items": {
+        "openBay": "Apri il vano filtri prima di iniziare",
+        "start": "Tocca \"Avvia\" per vedere l'anteprima live della fotocamera",
+        "verify": "Verifica che la linea laser sia visibile e centrata",
+        "closeBay": "Chiudi il vano filtri prima di procedere"
+      },
+      "step3Title": "Passo 3: Acquisizione",
+      "step3Intro": "Acquisisci e rivedi gli spettri:",
+      "step3Items": {
+        "adjust": "Regola il tempo di otturazione (0.1-10s) e il gain secondo necessità",
+        "capture": "Tocca \"Acquisisci\" per acquisire uno spettro",
+        "review": "Rivedi il risultato dell'identificazione e il punteggio di confidenza",
+        "multiple": "Acquisisci più spettri se necessario",
+        "export": "Esporta i risultati quando hai finito"
+      }
+    },
+    "troubleshooting": {
+      "connectionTitle": "Problemi di Connessione",
+      "connectionNotConnected": "<strong>Non connesso allo spettrometro:</strong>",
+      "connectionNotConnectedItems": {
+        "settings": "Vai nelle impostazioni WiFi del tuo dispositivo",
+        "connect": "Connettiti alla rete denominata \"spettromiao\"",
+        "wait": "Attendi alcuni secondi per la connessione",
+        "reload": "Ricarica l'app se l'avviso persiste",
+        "power": "Verifica che lo spettrometro sia acceso"
+      },
+      "connectionCertificate": "<strong>Connesso al WiFi ma mostra ancora \"Non connesso\":</strong>",
+      "connectionCertificateItems": {
+        "openLink": "Apri <a href=\"https://192.168.4.1\" target=\"_blank\">https://192.168.4.1</a> direttamente nel tuo browser",
+        "acceptCert": "Accetta l'avviso del certificato auto-firmato",
+        "return": "Torna all'app e ricarica"
+      },
+      "captureTitle": "Problemi di Acquisizione",
+      "captureTimeout": "<strong>Timeout fotocamera / bloccata:</strong>",
+      "captureTimeoutItems": {
+        "reload": "Ricarica la pagina, o vai indietro e avanti di un passo",
+        "restart": "Riavvia il dispositivo spettrometro",
+        "reduceTime": "Prova a ridurre il tempo di otturazione (es. 3s invece di 5s)",
+        "wait": "Attendi che la fotocamera si inizializzi completamente dopo il riavvio"
+      },
+      "captureFailed": "<strong>Acquisizione fallita:</strong>",
+      "captureFailedItems": {
+        "connection": "Verifica che lo spettrometro sia ancora connesso"
+      },
+      "captureBrightness": "<strong>Acquisizione troppo luminosa / scura:</strong>",
+      "captureBrightnessItems": {
+        "filterBay": "Verifica che il vano filtri sia chiuso",
+        "lowerGain": "Prova un'impostazione di gain più bassa se l'immagine è sovraesposta",
+        "increase": "Aumenta il tempo di otturazione o il gain se l'immagine è troppo scura"
+      },
+      "saveTitle": "Problemi di Salvataggio/Esportazione",
+      "saveFailed": "<strong>Salvataggio o esportazione falliti:</strong>",
+      "saveFailedItems": {
+        "storage": "Verifica se la memoria del browser è piena",
+        "export": "Esporta ed elimina vecchi test dalla Cronologia",
+        "browser": "Prova a usare un browser diverso",
+        "cache": "Cancella la cache del browser se i problemi persistono"
+      },
+      "syncTitle": "Problemi di Sincronizzazione",
+      "syncFailed": "<strong>Sincronizzazione non funzionante:</strong>",
+      "syncFailedItems": {
+        "url": "Verifica che l'URL del server sia corretto nelle Impostazioni",
+        "token": "Controlla che il tuo token API sia valido",
+        "internet": "Assicurati di avere connettività internet",
+        "test": "Usa \"Testa Connessione\" per diagnosticare i problemi"
+      }
+    }
+  },
+  "errors": {
+    "photoSave": {
+      "message": "Salvataggio foto fallito: {error}",
+      "tip": "Verifica se la memoria del browser è piena. Prova a rimuovere vecchi test dalla Cronologia."
+    },
+    "captureTimeout": {
+      "tip": "Prova a riavviare lo spettrometro. Se il problema persiste, riduci il tempo di otturazione."
+    },
+    "captureSaveFailed": {
+      "tip": "La memoria potrebbe essere piena. Esporta i dati correnti e cancella i vecchi test."
+    },
+    "captureFailed": {
+      "tip": "Assicurati che lo spettrometro sia connesso e che il vano filtri sia chiuso."
+    },
+    "captureError": {
+      "tip": "Verifica la connessione dello spettrometro. Se la fotocamera è bloccata, riavvia il dispositivo."
+    },
+    "exportFailed": {
+      "message": "Esportazione fallita: {error}",
+      "tip": "Assicurati di avere abbastanza spazio di archiviazione. Prova a esportare meno acquisizioni."
+    },
+    "sessionFailed": {
+      "message": "Creazione nuova sessione fallita",
+      "tip": "La memoria del browser potrebbe essere corrotta. Prova a cancellare vecchi test o resettare nelle Impostazioni."
+    },
+    "imageCompress": "Compressione immagine fallita",
+    "imageLoad": "Caricamento immagine fallito",
+    "noAcquisitionsToExport": "Nessuna acquisizione da esportare"
+  },
+  "confirmations": {
+    "newTest": "Iniziare un nuovo test? I dati correnti rimarranno memorizzati.",
+    "resetData": "Resettare i dati locali su questo dispositivo?\n\nQuesto eliminerà test salvati e impostazioni, ma non influenzerà lo spettrometro."
+  }
+}
