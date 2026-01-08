@@ -437,30 +437,14 @@
 
             <!-- Tab Navigation -->
             <div class="help-tabs">
-                <button class="help-tab active" data-tab="overview">Overview</button>
-                <button class="help-tab" data-tab="workflow">Workflow</button>
+                <button class="help-tab active" data-tab="workflow">Workflow</button>
                 <button class="help-tab" data-tab="troubleshooting">Troubleshooting</button>
             </div>
 
             <!-- Tab Content -->
             <div class="help-tab-content" id="helpTabContent">
-                <!-- Overview Tab -->
-                <div class="help-section active" id="help-overview">
-                    <h4>What is spettromiao?</h4>
-                    <p>spettromiao is a portable Raman spectrometer app for field-based substance identification. It connects to a Raspberry Pi-based spectrometer device to capture and analyze spectra.</p>
-
-                    <h4>Key Features</h4>
-                    <ul>
-                        <li>Real-time spectrum capture with adjustable exposure</li>
-                        <li>Automatic substance identification using reference library</li>
-                        <li>Local storage of all test sessions</li>
-                        <li>Optional cloud sync to remote server</li>
-                        <li>Works offline after initial setup</li>
-                    </ul>
-                </div>
-
                 <!-- Workflow Tab -->
-                <div class="help-section hidden" id="help-workflow">
+                <div class="help-section active" id="help-workflow">
                     <h4>Step 1: Test Information</h4>
                     <p>Enter details about your test:</p>
                     <ul>
@@ -514,16 +498,20 @@
                         <h4>Capture Problems</h4>
                         <p><strong>Camera timeout / stuck:</strong></p>
                         <ul>
+                            <li>Reload the page, or go back and forward a step</li>
                             <li>Restart the spectrometer device</li>
                             <li>Try reducing shutter time (e.g., 3s instead of 5s)</li>
-                            <li>Ensure the filter bay is closed during capture</li>
                             <li>Wait for the camera to fully initialize after restart</li>
                         </ul>
                         <p><strong>Capture failed:</strong></p>
                         <ul>
                             <li>Check that the spectrometer is still connected</li>
-                            <li>Verify calibration in Step 2 before capturing</li>
+                        </ul>
+                        <p><strong>Capture too bright / dark:</strong></p>
+                        <ul>
+                            <li>Check that the filter bay is closed</li>
                             <li>Try a lower gain setting if image is overexposed</li>
+                            <li>Increase shutter time or gain if image is too dark</li>
                         </ul>
                     </div>
 

@@ -1431,20 +1431,19 @@ function openHelpModal(section = null) {
     if (section) {
         // Map section to tab index
         const sectionToTab = {
-            'overview': 0,
-            'workflow': 1,
-            'troubleshooting': 2,
-            'connection': 2,
-            'capture': 2,
-            'save': 2,
-            'sync': 2
+            'workflow': 0,
+            'troubleshooting': 1,
+            'connection': 1,
+            'capture': 1,
+            'save': 1,
+            'sync': 1
         };
 
         const tabIndex = sectionToTab[section] ?? 0;
         switchHelpTab(tabIndex);
 
         // Scroll to specific subsection if on troubleshooting tab
-        if (tabIndex === 2 && section !== 'troubleshooting') {
+        if (tabIndex === 1 && section !== 'troubleshooting') {
             setTimeout(() => {
                 const anchor = document.getElementById(`help-${section}`);
                 if (anchor) {

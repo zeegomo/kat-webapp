@@ -1710,6 +1710,7 @@ body {
    ============================================================================ */
 
 .help-modal-content {
+    position: relative;
     width: min(500px, 95vw);
     max-height: 85vh;
     padding: var(--spacing-lg);
@@ -1718,6 +1719,39 @@ body {
     background: var(--bg);
     box-shadow: 4px 4px 0 var(--border);
     overflow-y: auto;
+}
+
+.help-modal-content .modal-close {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    z-index: 10;
+}
+
+@media (max-width: 480px) {
+    .help-modal-content {
+        width: 100vw;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        padding: var(--spacing-md);
+    }
+
+    .help-tabs {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    .help-tab {
+        font-size: 0.8rem;
+        padding: var(--spacing-xs) var(--spacing-sm);
+    }
+
+    .help-modal-content h3 {
+        padding-right: 40px;
+    }
 }
 
 .help-modal-content h3 {
