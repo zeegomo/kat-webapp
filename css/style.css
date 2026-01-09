@@ -931,6 +931,24 @@ body {
     font-size: 0.9375rem;
     font-weight: 400;
     cursor: pointer;
+    color: var(--text);
+}
+
+.language-option input[type="radio"]:checked + span {
+    font-weight: 600;
+}
+
+/* Dark mode specific improvements for language options */
+[data-theme="dark"] .language-option {
+    border: 1px solid transparent;
+}
+
+[data-theme="dark"] .language-option:hover {
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .language-option input[type="radio"]:checked {
+    accent-color: var(--text);
 }
 
 .calibration-status {
