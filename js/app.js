@@ -2934,11 +2934,25 @@ async function init() {
         hideStartupModal();
     } catch (error) {
         console.error('App initialization failed:', error);
-        showStartupModal({
-            title: i18n.t('modals.startup.failed'),
-            message: error?.message || String(error),
-            showReset: true,
-        });
+
+        // Check if this is a storage/IndexedDB access denied error
+        const errorMessage = error?.message || String(error);
+        const isStorageAccessDenied = /denied|blocked|access|UnknownError/i.test(errorMessage) &&
+            /database|storage|indexeddb/i.test(errorMessage);
+
+        if (isStorageAccessDenied) {
+            showStartupModal({
+                title: i18n.t('modals.startup.storageAccessDenied'),
+                message: i18n.t('modals.startup.storageAccessDeniedMessage'),
+                showReset: false, // Reset won't help if storage is blocked
+            });
+        } else {
+            showStartupModal({
+                title: i18n.t('modals.startup.failed'),
+                message: errorMessage,
+                showReset: true,
+            });
+        }
     } finally {
         state.initInProgress = false;
     }

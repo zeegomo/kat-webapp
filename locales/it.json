@@ -260,7 +260,9 @@
       "failed": "Avvio fallito",
       "openingStorage": "Apertura memoria locale…",
       "loadingSettings": "Caricamento impostazioni…",
-      "loadingSessions": "Caricamento test salvati…"
+      "loadingSessions": "Caricamento test salvati…",
+      "storageAccessDenied": "Accesso alla memoria negato",
+      "storageAccessDeniedMessage": "Il browser ha bloccato l'accesso alla memoria locale. Questo può accadere quando:\n\n• I permessi di archiviazione sono disabilitati nelle impostazioni di Chrome\n• Il browser è in modalità incognito/privata\n• I dati del sito sono bloccati per questa pagina\n\nPer risolvere: Apri Impostazioni Chrome → Impostazioni sito → assicurati che \"Cookie e dati dei siti\" sia consentito. Poi ricarica l'app."
     }
   },
   "help": {
@@ -345,6 +347,15 @@
         "token": "Controlla che il tuo token API sia valido",
         "internet": "Assicurati di avere connettività internet",
         "test": "Usa \"Testa Connessione\" per diagnosticare i problemi"
+      },
+      "storageTitle": "Problemi di Accesso alla Memoria",
+      "storageAccessDenied": "<strong>\"Accesso alla memoria negato\" all'avvio:</strong>",
+      "storageAccessDeniedItems": {
+        "incognito": "Assicurati di non essere in modalità incognito/navigazione privata",
+        "settings": "Apri Impostazioni Chrome → Impostazioni sito → Cookie e dati dei siti",
+        "allow": "Assicurati che \"Consenti ai siti di salvare e leggere i dati dei cookie\" sia abilitato",
+        "siteSpecific": "Verifica che questo sito non sia bloccato in \"Siti che non possono mai usare i cookie\"",
+        "reload": "Ricarica l'app dopo aver modificato le impostazioni"
       }
     }
   },
