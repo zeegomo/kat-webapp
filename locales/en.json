@@ -260,7 +260,9 @@
       "failed": "Startup failed",
       "openingStorage": "Opening local storage…",
       "loadingSettings": "Loading settings…",
-      "loadingSessions": "Loading saved tests…"
+      "loadingSessions": "Loading saved tests…",
+      "storageAccessDenied": "Storage access denied",
+      "storageAccessDeniedMessage": "The browser blocked access to local storage. This can happen when:\n\n• Storage permissions are disabled in Chrome settings\n• The browser is in incognito/private mode\n• Site data is blocked for this page\n\nTo fix: Open Chrome Settings → Site Settings → ensure \"Cookies and site data\" is allowed. Then reload the app."
     }
   },
   "help": {
@@ -345,6 +347,15 @@
         "token": "Check that your API token is valid",
         "internet": "Ensure you have internet connectivity",
         "test": "Use \"Test Connection\" to diagnose issues"
+      },
+      "storageTitle": "Storage Access Issues",
+      "storageAccessDenied": "<strong>\"Storage access denied\" on startup:</strong>",
+      "storageAccessDeniedItems": {
+        "incognito": "Make sure you're not in incognito/private browsing mode",
+        "settings": "Open Chrome Settings → Site Settings → Cookies and site data",
+        "allow": "Ensure \"Allow sites to save and read cookie data\" is enabled",
+        "siteSpecific": "Check that this site isn't blocked under \"Sites that can never use cookies\"",
+        "reload": "Reload the app after changing settings"
       }
     }
   },
