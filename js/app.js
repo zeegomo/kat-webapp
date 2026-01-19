@@ -2198,6 +2198,14 @@ async function syncNow() {
         const result = await sync.syncAll();
         if (result.errors?.length > 0) {
             showSyncFeedback(i18n.t('settings.syncing.completeWithErrors', { synced: result.synced, failed: result.failed }), 'error');
+            // Log errors to console for debugging
+            console.warn('Sync errors:', result.errors);
+            // Show first error as additional detail
+            if (result.errors[0]) {
+                setTimeout(() => {
+                    showSyncFeedback(result.errors[0], 'error');
+                }, 2000);
+            }
         } else {
             showSyncFeedback(i18n.t('settings.syncing.complete', { synced: result.synced }), 'success');
         }

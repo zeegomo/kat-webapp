@@ -141,6 +141,9 @@ async function syncAll() {
     const results = { synced: 0, failed: 0, errors: [] };
 
     try {
+        // Reset any previously failed items so they get retried
+        await db.resetFailedSync();
+
         const pending = await db.getPendingSync();
 
         for (const item of pending) {
@@ -150,7 +153,10 @@ async function syncAll() {
             } catch (e) {
                 await db.markSyncFailed(item.sessionId, e.message);
                 results.failed++;
-                results.errors.push(`${item.sessionId}: ${e.message}`);
+                // Get session info for better error context
+                const session = await db.getSession(item.sessionId);
+                const sessionName = session?.event || new Date(session?.createdAt).toLocaleDateString();
+                results.errors.push(`${sessionName}: ${e.message}`);
                 console.error(`Sync failed for ${item.sessionId}:`, e);
             }
         }
