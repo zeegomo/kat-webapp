@@ -203,6 +203,7 @@ const elements = {
     autoSyncToggle: document.getElementById('autoSyncToggle'),
     testSyncBtn: document.getElementById('testSyncBtn'),
     syncNowBtn: document.getElementById('syncNowBtn'),
+    resyncAllBtn: document.getElementById('resyncAllBtn'),
     pendingCount: document.getElementById('pendingCount'),
     syncStatusEl: document.getElementById('syncStatus'),
 
@@ -2219,6 +2220,44 @@ async function syncNow() {
     }
 }
 
+async function resyncAll() {
+    if (state.syncStatus.syncing) return;
+
+    // Confirm with user since this re-uploads all data
+    if (!confirm(i18n.t('confirmations.resyncAll'))) {
+        return;
+    }
+
+    state.syncStatus.syncing = true;
+    updateSyncIndicator();
+    showSyncFeedback(i18n.t('settings.syncing.resyncInProgress'), 'syncing');
+    elements.syncNowBtn.disabled = true;
+    elements.resyncAllBtn.disabled = true;
+
+    try {
+        const result = await sync.forceResyncAll();
+        if (result.errors?.length > 0) {
+            showSyncFeedback(i18n.t('settings.syncing.completeWithErrors', { synced: result.synced, failed: result.failed }), 'error');
+            console.warn('Re-sync errors:', result.errors);
+            if (result.errors[0]) {
+                setTimeout(() => {
+                    showSyncFeedback(result.errors[0], 'error');
+                }, 2000);
+            }
+        } else {
+            showSyncFeedback(i18n.t('settings.syncing.resyncComplete', { synced: result.synced }), 'success');
+        }
+        await loadSyncStatus();
+    } catch (error) {
+        showSyncFeedback(error.message || i18n.t('settings.syncing.failed'), 'error');
+    } finally {
+        state.syncStatus.syncing = false;
+        updateSyncIndicator();
+        elements.syncNowBtn.disabled = false;
+        elements.resyncAllBtn.disabled = false;
+    }
+}
+
 function showSyncFeedback(message, type) {
     if (!elements.syncStatusEl) return;
 
@@ -2670,6 +2709,7 @@ function setupEventListeners() {
     elements.autoSyncToggle.addEventListener('change', saveSyncSettings);
     elements.testSyncBtn.addEventListener('click', testSyncConnection);
     elements.syncNowBtn.addEventListener('click', syncNow);
+    elements.resyncAllBtn.addEventListener('click', resyncAll);
 
     // Version controls
     elements.checkUpdateBtn.addEventListener('click', checkForUpdates);

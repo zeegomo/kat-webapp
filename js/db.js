@@ -638,15 +638,39 @@ async function updateSettings(updates) {
 /**
  * Queue a session for sync.
  * @param {string} sessionId - Session ID to queue
+ * @param {boolean} force - If true, queue even if already synced (for force re-sync)
  * @returns {Promise<Object>}
  */
-async function queueForSync(sessionId) {
-    const db = await openDB();
+async function queueForSync(sessionId, force = false) {
+    const database = await openDB();
 
     // Check if already queued
     const existing = await getSyncQueueItem(sessionId);
     if (existing) {
+        // If forcing, reset status to pending
+        if (force && existing.status !== 'pending') {
+            existing.status = 'pending';
+            existing.retryCount = 0;
+            existing.lastError = null;
+            existing.queuedAt = new Date().toISOString();
+            return new Promise((resolve, reject) => {
+                const tx = database.transaction(STORES.syncQueue, 'readwrite');
+                const store = tx.objectStore(STORES.syncQueue);
+                const request = store.put(existing);
+
+                request.onsuccess = () => resolve(existing);
+                request.onerror = () => reject(request.error);
+            });
+        }
         return existing;
+    }
+
+    // If not forcing, skip already synced sessions
+    if (!force) {
+        const session = await getSession(sessionId);
+        if (session?.syncedAt) {
+            return null;
+        }
     }
 
     const item = {
@@ -659,7 +683,7 @@ async function queueForSync(sessionId) {
     };
 
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORES.syncQueue, 'readwrite');
+        const tx = database.transaction(STORES.syncQueue, 'readwrite');
         const store = tx.objectStore(STORES.syncQueue);
         const request = store.add(item);
 

@@ -152,6 +152,7 @@
     "downloadCsv": "Download CSV",
     "testConnection": "Test Connection",
     "syncNow": "Sync Now",
+    "resyncAll": "Re-sync All",
     "checkUpdates": "Check for Updates",
     "updateNow": "Update Now",
     "reload": "Reload",
@@ -209,7 +210,9 @@
       "inProgress": "Syncing...",
       "complete": "Synced: {synced}",
       "completeWithErrors": "Synced: {synced}, Failed: {failed}",
-      "failed": "Sync failed"
+      "failed": "Sync failed",
+      "resyncInProgress": "Re-syncing all sessions...",
+      "resyncComplete": "Re-synced: {synced}"
     },
     "version": {
       "title": "App Version",
@@ -390,6 +393,7 @@
   },
   "confirmations": {
     "newTest": "Start a new test? Current data will remain stored.",
-    "resetData": "Reset local data on this device?\n\nThis deletes saved tests and settings, but does not affect the spectrometer."
+    "resetData": "Reset local data on this device?\n\nThis deletes saved tests and settings, but does not affect the spectrometer.",
+    "resyncAll": "Re-sync all sessions?\n\nThis will upload all sessions again, updating any existing data on the server."
   }
 }

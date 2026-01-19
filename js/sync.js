@@ -36,8 +36,9 @@ async function syncSession(sessionId) {
 
     const acquisitions = await db.getAcquisitionsBySession(sessionId);
 
-    // Build CouchDB document
+    // Build CouchDB document with deterministic ID based on local session ID
     const doc = {
+        _id: `session-${sessionId}`,
         type: 'session',
         event: session.event,
         substance: session.substance,
@@ -102,7 +103,7 @@ async function syncSession(sessionId) {
     }
 
     // POST to CouchDB
-    const response = await fetch(`${settings.syncServerUrl}/kat_sessions`, {
+    let response = await fetch(`${settings.syncServerUrl}/kat_sessions`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -110,6 +111,33 @@ async function syncSession(sessionId) {
         },
         body: JSON.stringify(doc),
     });
+
+    // Handle 409 Conflict - document already exists, fetch and update
+    if (response.status === 409) {
+        const existingDocResponse = await fetch(`${settings.syncServerUrl}/kat_sessions/session-${sessionId}`, {
+            headers: {
+                'Authorization': `Bearer ${settings.syncToken}`,
+            },
+        });
+
+        if (!existingDocResponse.ok) {
+            const errorText = await existingDocResponse.text();
+            throw new Error(`Failed to fetch existing document (${existingDocResponse.status}): ${errorText}`);
+        }
+
+        const existingDoc = await existingDocResponse.json();
+        doc._rev = existingDoc._rev;
+
+        // PUT to update existing document
+        response = await fetch(`${settings.syncServerUrl}/kat_sessions/session-${sessionId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${settings.syncToken}`,
+            },
+            body: JSON.stringify(doc),
+        });
+    }
 
     if (!response.ok) {
         const errorText = await response.text();
@@ -214,6 +242,28 @@ async function queueAllUnsyncedSessions() {
     }
 
     return queuedCount;
+}
+
+/**
+ * Force re-sync all sessions, including previously synced ones.
+ * Uses deterministic IDs so re-syncing updates existing documents instead of creating duplicates.
+ * @returns {Promise<Object>} Results summary
+ */
+async function forceResyncAll() {
+    const sessions = await db.listSessions();
+    let queuedCount = 0;
+
+    for (const session of sessions) {
+        // Check if session has acquisitions
+        const acquisitions = await db.getAcquisitionsBySession(session.id);
+        if (acquisitions.length > 0) {
+            await db.queueForSync(session.id, true); // true = force even if already synced
+            queuedCount++;
+        }
+    }
+
+    console.log(`Force re-sync: queued ${queuedCount} sessions`);
+    return syncAll();
 }
 
 // ============================================================================
@@ -410,6 +460,7 @@ const sync = {
     syncAll,
     queueCurrentSession,
     queueAllUnsyncedSessions,
+    forceResyncAll,
     testConnection,
     startBackgroundSync,
     stopBackgroundSync,

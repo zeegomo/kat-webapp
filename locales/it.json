@@ -152,6 +152,7 @@
     "downloadCsv": "Scarica CSV",
     "testConnection": "Testa Connessione",
     "syncNow": "Sincronizza Ora",
+    "resyncAll": "Ri-sincronizza Tutto",
     "checkUpdates": "Verifica Aggiornamenti",
     "updateNow": "Aggiorna Ora",
     "reload": "Ricarica",
@@ -209,7 +210,9 @@
       "inProgress": "Sincronizzazione...",
       "complete": "Sincronizzati: {synced}",
       "completeWithErrors": "Sincronizzati: {synced}, Falliti: {failed}",
-      "failed": "Sincronizzazione fallita"
+      "failed": "Sincronizzazione fallita",
+      "resyncInProgress": "Ri-sincronizzazione di tutte le sessioni...",
+      "resyncComplete": "Ri-sincronizzati: {synced}"
     },
     "version": {
       "title": "Versione App",
@@ -390,6 +393,7 @@
   },
   "confirmations": {
     "newTest": "Iniziare un nuovo test? I dati correnti rimarranno memorizzati.",
-    "resetData": "Resettare i dati locali su questo dispositivo?\n\nQuesto eliminerà test salvati e impostazioni, ma non influenzerà lo spettrometro."
+    "resetData": "Resettare i dati locali su questo dispositivo?\n\nQuesto eliminerà test salvati e impostazioni, ma non influenzerà lo spettrometro.",
+    "resyncAll": "Ri-sincronizzare tutte le sessioni?\n\nQuesto caricherà nuovamente tutte le sessioni, aggiornando i dati esistenti sul server."
   }
 }
