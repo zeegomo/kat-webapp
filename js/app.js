@@ -2035,6 +2035,7 @@ async function loadSettings() {
     try {
         state.settings = await db.getSettings();
         updateSettingsUI();
+        updateSyncSettingsUI();
 
         // Sync camera settings to Pi (non-blocking, don't await)
         const cameraSettings = state.settings.cameraSettings || {};
@@ -2190,8 +2191,8 @@ async function syncNow() {
     elements.syncNowBtn.disabled = true;
 
     try {
-        // Queue current session first
-        await sync.queueCurrentSession(false);
+        // Queue all unsynced sessions (including past sessions)
+        await sync.queueAllUnsyncedSessions();
 
         // Then sync all pending
         const result = await sync.syncAll();

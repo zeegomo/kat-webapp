@@ -186,6 +186,30 @@ async function queueCurrentSession(syncNow = false) {
     return { queued: true, sessionId: session.id };
 }
 
+/**
+ * Queue all unsynced sessions for sync.
+ * This ensures past sessions that were never queued get synced.
+ * @returns {Promise<number>} Number of sessions queued
+ */
+async function queueAllUnsyncedSessions() {
+    const sessions = await db.listSessions();
+    let queuedCount = 0;
+
+    for (const session of sessions) {
+        // Skip already synced sessions
+        if (session.syncedAt) continue;
+
+        // Check if session has acquisitions
+        const acquisitions = await db.getAcquisitionsBySession(session.id);
+        if (acquisitions.length > 0) {
+            await db.queueForSync(session.id);
+            queuedCount++;
+        }
+    }
+
+    return queuedCount;
+}
+
 // ============================================================================
 // Connection Testing
 // ============================================================================
@@ -328,10 +352,26 @@ async function getSyncStatus() {
     const settings = await db.getSettings();
     const pending = await db.getPendingSync();
 
+    // Also count unsynced sessions not yet queued
+    let unsyncedCount = 0;
+    const sessions = await db.listSessions();
+    for (const session of sessions) {
+        if (!session.syncedAt) {
+            const acquisitions = await db.getAcquisitionsBySession(session.id);
+            if (acquisitions.length > 0) {
+                // Check if not already in queue
+                const inQueue = pending.some(p => p.sessionId === session.id);
+                if (!inQueue) {
+                    unsyncedCount++;
+                }
+            }
+        }
+    }
+
     return {
         configured: Boolean(settings.syncServerUrl && settings.syncToken),
         autoSync: settings.autoSync,
-        pending: pending.length,
+        pending: pending.length + unsyncedCount,
         syncing: isSyncing,
         backgroundRunning: backgroundSyncEnabled,
         online: navigator.onLine,
@@ -363,6 +403,7 @@ const sync = {
     syncSession,
     syncAll,
     queueCurrentSession,
+    queueAllUnsyncedSessions,
     testConnection,
     startBackgroundSync,
     stopBackgroundSync,
