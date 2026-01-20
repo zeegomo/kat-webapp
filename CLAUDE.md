@@ -18,6 +18,13 @@ After making changes:
 # e.g., if version.txt contains "0.2.9", update it to "0.2.10"
 ```
 
+## Tech Stack
+
+- Vanilla JavaScript (no build step)
+- IndexedDB for local storage
+- Service Worker for offline support
+- PWA with manifest.json
+
 ## Key Files
 
 ```
