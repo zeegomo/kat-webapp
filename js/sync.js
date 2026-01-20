@@ -337,6 +337,9 @@ function startBackgroundSync(intervalMs = 300000) {
         if (navigator.onLine) {
             const settings = await db.getSettings();
             if (settings.autoSync && settings.syncServerUrl && settings.syncToken) {
+                // Queue any unsynced sessions first (just like "Sync Now" button does)
+                await queueAllUnsyncedSessions();
+
                 const pending = await db.getPendingSync();
                 if (pending.length > 0) {
                     console.log(`Background sync: ${pending.length} pending items`);
@@ -372,6 +375,9 @@ async function onOnline() {
     const settings = await db.getSettings();
 
     if (settings.autoSync && settings.syncServerUrl && settings.syncToken) {
+        // Queue any unsynced sessions first (just like "Sync Now" button does)
+        await queueAllUnsyncedSessions();
+
         const pending = await db.getPendingSync();
         if (pending.length > 0) {
             console.log(`Auto-syncing ${pending.length} pending items`);
