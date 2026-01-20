@@ -10,6 +10,20 @@ const TARGET_WAVELENGTH_MAX = 1800;
 const TARGET_WAVELENGTH_STEP = 1;
 const TARGET_WAVELENGTH_LENGTH = TARGET_WAVELENGTH_MAX - TARGET_WAVELENGTH_MIN + 1; // 1301
 
+// Validation thresholds
+const VALIDATION_THRESHOLDS = {
+    // For underexposed detection: minimum standard deviation expected in active region
+    MIN_STD_DEV: 0.02,
+    // Start index for active region check (800nm = index 300)
+    ACTIVE_REGION_START: 300,
+    // For overexposed detection: maximum allowed percentage of saturated values
+    MAX_SATURATED_PERCENT: 15,
+    // Value threshold to consider a point as saturated (near maximum)
+    SATURATION_THRESHOLD: 0.98,
+    // Minimum consecutive saturated points to consider as clipping
+    MIN_CLIPPING_LENGTH: 10,
+};
+
 /**
  * Compute cosine similarity between two vectors.
  * Formula: cos(θ) = (a·b) / (||a|| * ||b||)
@@ -78,6 +92,131 @@ function pearsonCorrelation(a, b) {
     }
 
     return covariance / (n * stdA * stdB);
+}
+
+/**
+ * Validation result object.
+ * @typedef {Object} ValidationResult
+ * @property {boolean} valid - Whether the spectrum is valid
+ * @property {string[]} issues - Array of issue codes ('underexposed', 'overexposed', 'clipping')
+ * @property {Object} metrics - Detailed metrics for debugging
+ */
+
+/**
+ * Calculate standard deviation of an array.
+ * @param {number[]} values - Array of values
+ * @returns {number} Standard deviation
+ */
+function standardDeviation(values) {
+    const n = values.length;
+    if (n === 0) return 0;
+
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+        sum += values[i];
+    }
+    const mean = sum / n;
+
+    let variance = 0;
+    for (let i = 0; i < n; i++) {
+        const diff = values[i] - mean;
+        variance += diff * diff;
+    }
+
+    return Math.sqrt(variance / n);
+}
+
+/**
+ * Detect if spectrum is underexposed (all black / flat signal).
+ * Checks the standard deviation in the active region where Raman features should appear.
+ * @param {number[]} spectrum - Preprocessed spectrum data (1301 points)
+ * @returns {{isUnderexposed: boolean, stdDev: number}}
+ */
+function detectUnderexposed(spectrum) {
+    // Check the region from 800nm onwards (index 300) where Raman features should be
+    const activeRegion = spectrum.slice(VALIDATION_THRESHOLDS.ACTIVE_REGION_START);
+    const stdDev = standardDeviation(activeRegion);
+
+    return {
+        isUnderexposed: stdDev < VALIDATION_THRESHOLDS.MIN_STD_DEV,
+        stdDev: stdDev,
+    };
+}
+
+/**
+ * Detect if spectrum is overexposed (saturated / clipped).
+ * Checks for high percentage of values near maximum and consecutive saturated values.
+ * @param {number[]} spectrum - Preprocessed spectrum data (1301 points)
+ * @returns {{isOverexposed: boolean, saturatedPercent: number, maxClippingLength: number}}
+ */
+function detectOverexposed(spectrum) {
+    const n = spectrum.length;
+    let saturatedCount = 0;
+    let currentClipLength = 0;
+    let maxClipLength = 0;
+
+    for (let i = 0; i < n; i++) {
+        if (spectrum[i] >= VALIDATION_THRESHOLDS.SATURATION_THRESHOLD) {
+            saturatedCount++;
+            currentClipLength++;
+            if (currentClipLength > maxClipLength) {
+                maxClipLength = currentClipLength;
+            }
+        } else {
+            currentClipLength = 0;
+        }
+    }
+
+    const saturatedPercent = (saturatedCount / n) * 100;
+
+    // Overexposed if too many saturated values OR significant clipping pattern
+    const isOverexposed = saturatedPercent > VALIDATION_THRESHOLDS.MAX_SATURATED_PERCENT ||
+                         maxClipLength >= VALIDATION_THRESHOLDS.MIN_CLIPPING_LENGTH;
+
+    return {
+        isOverexposed,
+        saturatedPercent,
+        maxClippingLength: maxClipLength,
+    };
+}
+
+/**
+ * Validate a spectrum for common capture issues.
+ * @param {number[]} spectrum - Preprocessed spectrum data (1301 points)
+ * @returns {ValidationResult} Validation result with issues and metrics
+ */
+function validateSpectrum(spectrum) {
+    if (!spectrum || spectrum.length !== TARGET_WAVELENGTH_LENGTH) {
+        return {
+            valid: false,
+            issues: ['invalid_data'],
+            metrics: { error: 'Invalid spectrum length' },
+        };
+    }
+
+    const issues = [];
+    const metrics = {};
+
+    // Check for underexposure
+    const underexposedResult = detectUnderexposed(spectrum);
+    metrics.stdDev = underexposedResult.stdDev;
+    if (underexposedResult.isUnderexposed) {
+        issues.push('underexposed');
+    }
+
+    // Check for overexposure
+    const overexposedResult = detectOverexposed(spectrum);
+    metrics.saturatedPercent = overexposedResult.saturatedPercent;
+    metrics.maxClippingLength = overexposedResult.maxClippingLength;
+    if (overexposedResult.isOverexposed) {
+        issues.push('overexposed');
+    }
+
+    return {
+        valid: issues.length === 0,
+        issues,
+        metrics,
+    };
 }
 
 /**
@@ -250,7 +389,21 @@ class SpectrumIdentifier {
         this.ready = false;
         console.log('Identifier: Cache cleared');
     }
+
+    /**
+     * Validate a spectrum for capture quality issues.
+     * @param {number[]} spectrum - Preprocessed spectrum data (1301 points)
+     * @returns {ValidationResult} Validation result with issues and metrics
+     */
+    validate(spectrum) {
+        return validateSpectrum(spectrum);
+    }
 }
 
 // Global identifier instance
 const identifier = new SpectrumIdentifier();
+
+// Export validation function for direct use
+if (typeof window !== 'undefined') {
+    window.validateSpectrum = validateSpectrum;
+}

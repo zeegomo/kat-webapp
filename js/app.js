@@ -151,6 +151,8 @@ const elements = {
     resultSubstance: document.getElementById('resultSubstance'),
     resultScore: document.getElementById('resultScore'),
     resultTime: document.getElementById('resultTime'),
+    validationWarning: document.getElementById('validationWarning'),
+    validationWarningText: document.getElementById('validationWarningText'),
     viewPlotBtn: document.getElementById('viewPlotBtn'),
     viewMatchesBtn: document.getElementById('viewMatchesBtn'),
     downloadCsvBtn: document.getElementById('downloadCsvBtn'),
@@ -1190,6 +1192,15 @@ async function captureComplete(result) {
                 console.warn('No csv data received from Pi - Download CSV will be disabled');
             }
 
+            // Validate spectrum for capture quality issues
+            let validationResult = null;
+            if (result.preprocessed_spectrum) {
+                validationResult = identifier.validate(result.preprocessed_spectrum);
+                if (!validationResult.valid) {
+                    console.warn('Capture quality issues detected:', validationResult.issues, validationResult.metrics);
+                }
+            }
+
             // Perform browser-side identification
             let identification = null;
             if (result.preprocessed_spectrum && identifier.isReady()) {
@@ -1216,6 +1227,7 @@ async function captureComplete(result) {
                     laserWavelength: result.laser_wavelength,
                     detectionMode: result.detection_mode,
                     csv: result.csv,
+                    validationIssues: validationResult?.issues || [],
                 },
                 files
             );
@@ -1270,6 +1282,16 @@ async function updateResultUI(acquisition, identification) {
     }
 
     elements.resultsSection.classList.remove('hidden');
+
+    // Display validation warnings if present
+    const validationIssues = acquisition.validationIssues || [];
+    if (validationIssues.length > 0) {
+        const warningMessages = validationIssues.map(issue => i18n.t(`step3.results.validation.${issue}`));
+        elements.validationWarningText.textContent = warningMessages.join('. ');
+        elements.validationWarning.classList.remove('hidden');
+    } else {
+        elements.validationWarning.classList.add('hidden');
+    }
 
     // Load photo from IndexedDB
     if (acquisition.fileIds?.photo) {

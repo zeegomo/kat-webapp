@@ -127,6 +127,11 @@
       "wavelength": {
         "detected": "{value}nm (rilevato)",
         "manual": "{value}nm (manuale)"
+      },
+      "validation": {
+        "underexposed": "Cattura sottoesposta (troppo scura). Prova ad aumentare il tempo di esposizione o il guadagno.",
+        "overexposed": "Cattura sovraesposta (saturata). Prova a ridurre il tempo di esposizione o il guadagno.",
+        "invalid_data": "Dati dello spettro non validi."
       }
     },
     "gallery": {

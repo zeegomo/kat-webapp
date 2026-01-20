@@ -127,6 +127,11 @@
       "wavelength": {
         "detected": "{value}nm (detected)",
         "manual": "{value}nm (manual)"
+      },
+      "validation": {
+        "underexposed": "Capture appears underexposed (too dark). Try increasing shutter time or gain.",
+        "overexposed": "Capture appears overexposed (saturated). Try decreasing shutter time or gain.",
+        "invalid_data": "Invalid spectrum data received."
       }
     },
     "gallery": {

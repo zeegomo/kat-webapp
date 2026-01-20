@@ -531,6 +531,24 @@ body {
     border-bottom: 1px dashed var(--border);
 }
 
+.validation-warning {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(255, 152, 0, 0.15);
+    border: 1px solid var(--accent-warning);
+    border-radius: 4px;
+    margin-bottom: var(--spacing-md);
+    font-size: 0.875rem;
+    color: var(--accent-warning);
+}
+
+.validation-warning .warning-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
 .result-card {
     display: flex;
     gap: var(--spacing-md);
