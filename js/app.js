@@ -254,6 +254,75 @@ const elements = {
 };
 
 // ============================================================================
+// Exposure Check
+// ============================================================================
+
+/**
+ * Check if the spectrum capture is over or under exposed.
+ * Compares max intensity in the spectrum region (500-1500 cm^-1) vs the laser line region (0-50 cm^-1).
+ * @param {string} csv - CSV data with wavenumber,intensity columns
+ * @returns {{status: 'ok'|'overexposed'|'underexposed', laserMax: number, spectrumMax: number, ratio: number}|null}
+ */
+function checkExposure(csv) {
+    if (!csv) return null;
+
+    try {
+        const lines = csv.trim().split('\n');
+        // Skip header if present
+        const startIdx = lines[0].includes('wavenumber') || lines[0].includes('cm') ? 1 : 0;
+
+        let laserMax = 0;  // Max in 0-50 cm^-1 region
+        let spectrumMax = 0;  // Max in 500-1500 cm^-1 region
+
+        for (let i = startIdx; i < lines.length; i++) {
+            const parts = lines[i].split(',');
+            if (parts.length < 2) continue;
+
+            const wavenumber = parseFloat(parts[0]);
+            const intensity = parseFloat(parts[1]);
+
+            if (isNaN(wavenumber) || isNaN(intensity)) continue;
+
+            // Laser line region: 0-50 cm^-1
+            if (wavenumber >= 0 && wavenumber <= 50) {
+                if (intensity > laserMax) {
+                    laserMax = intensity;
+                }
+            }
+
+            // Spectrum region: 500-1500 cm^-1
+            if (wavenumber >= 500 && wavenumber <= 1500) {
+                if (intensity > spectrumMax) {
+                    spectrumMax = intensity;
+                }
+            }
+        }
+
+        // Need valid data in both regions to check
+        if (laserMax === 0 || spectrumMax === 0) {
+            return null;
+        }
+
+        const ratio = spectrumMax / laserMax;
+
+        // Overexposed: spectrum max >= 3x laser max
+        if (ratio >= 3) {
+            return { status: 'overexposed', laserMax, spectrumMax, ratio };
+        }
+
+        // Underexposed: spectrum max < 0.5x laser max
+        if (ratio < 0.5) {
+            return { status: 'underexposed', laserMax, spectrumMax, ratio };
+        }
+
+        return { status: 'ok', laserMax, spectrumMax, ratio };
+    } catch (e) {
+        console.error('Exposure check failed:', e);
+        return null;
+    }
+}
+
+// ============================================================================
 // Enhanced Error Alerts with Troubleshooting Tips
 // ============================================================================
 
@@ -1234,6 +1303,16 @@ async function captureComplete(result) {
             await updateGalleryUI();
             updateExportButton();
             await updateResultUI(acquisition, identification);
+
+            // Check exposure levels and warn if needed
+            const exposureCheck = checkExposure(result.csv);
+            if (exposureCheck) {
+                if (exposureCheck.status === 'overexposed') {
+                    alert(i18n.t('capture.exposureWarning.overexposed'));
+                } else if (exposureCheck.status === 'underexposed') {
+                    alert(i18n.t('capture.exposureWarning.underexposed'));
+                }
+            }
 
         } catch (error) {
             console.error('Failed to store acquisition:', error);

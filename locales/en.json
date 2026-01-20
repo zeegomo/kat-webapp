@@ -170,7 +170,11 @@
     "timeout": "Capture timed out - camera may be stuck",
     "failed": "Capture failed: {error}",
     "error": "Capture error: {message}",
-    "saveFailed": "Capture succeeded but failed to save: {error}"
+    "saveFailed": "Capture succeeded but failed to save: {error}",
+    "exposureWarning": {
+      "overexposed": "Warning: Capture may be overexposed.\n\nThe spectrum signal is much stronger than the laser line. Check the photo and consider reducing shutter time or gain.",
+      "underexposed": "Warning: Capture may be underexposed.\n\nThe spectrum signal is weak compared to the laser line. Consider increasing shutter time or gain."
+    }
   },
   "settings": {
     "title": "Settings",

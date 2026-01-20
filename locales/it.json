@@ -170,7 +170,11 @@
     "timeout": "Acquisizione scaduta - fotocamera potrebbe essere bloccata",
     "failed": "Acquisizione fallita: {error}",
     "error": "Errore acquisizione: {message}",
-    "saveFailed": "Acquisizione riuscita ma salvataggio fallito: {error}"
+    "saveFailed": "Acquisizione riuscita ma salvataggio fallito: {error}",
+    "exposureWarning": {
+      "overexposed": "Attenzione: L'acquisizione potrebbe essere sovraesposta.\n\nIl segnale dello spettro è molto più forte della linea laser. Controlla la foto e considera di ridurre il tempo di otturazione o il guadagno.",
+      "underexposed": "Attenzione: L'acquisizione potrebbe essere sottoesposta.\n\nIl segnale dello spettro è debole rispetto alla linea laser. Considera di aumentare il tempo di otturazione o il guadagno."
+    }
   },
   "settings": {
     "title": "Impostazioni",
