@@ -18,13 +18,6 @@ After making changes:
 # e.g., if version.txt contains "0.2.9", update it to "0.2.10"
 ```
 
-## Tech Stack
-
-- Vanilla JavaScript (no build step)
-- IndexedDB for local storage
-- Service Worker for offline support
-- PWA with manifest.json
-
 ## Key Files
 
 ```
@@ -48,14 +41,6 @@ After making changes:
 └── pi-loader/
     └── index.html      # Fallback loader for Pi deployment
 ```
-
-## Architecture
-
-The app supports two deployment methods:
-
-1. **GitHub Pages + Local Network Access (LNA)** - Recommended. App served from GitHub Pages, uses LNA to communicate with Pi at `https://192.168.4.1`
-
-2. **Pi-Loader** - Fallback for browsers without LNA. Pi serves a loader that fetches the app from GitHub and caches it locally.
 
 ## Development
 
