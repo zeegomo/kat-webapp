@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Data Viewer - spettromiao</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text: #eaeaea;
+            --text-muted: #a0a0a0;
+            --border: #3a3a5c;
+            --primary: #e94560;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .header h1 span {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-size: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Connection Form */
+        .connection-form {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .connection-form input {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .connection-form input[type="url"] {
+            width: 300px;
+        }
+
+        .connection-form input[type="password"] {
+            width: 200px;
+        }
+
+        .connection-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-secondary);
+            color: var(--text);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn:hover {
+            border-color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #d63850;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            height: calc(100vh - 65px);
+        }
+
+        /* Sidebar - Session List */
+        .sidebar {
+            width: 350px;
+            border-right: 2px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .session-count {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .session-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .session-item {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .session-item:hover {
+            border-color: var(--text-muted);
+        }
+
+        .session-item.active {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        .session-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .session-item-event {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .session-item-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .session-item-details {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .session-item-match {
+            font-weight: 500;
+        }
+
+        .session-item-match.high { color: var(--success); }
+        .session-item-match.medium { color: var(--warning); }
+        .session-item-match.low { color: var(--error); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .loading::before {
+            content: "↻";
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: var(--error);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        /* Session Detail */
+        .session-detail {
+            max-width: 1200px;
+        }
+
+        .session-detail h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .session-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+        }
+
+        /* Substance Photo */
+        .substance-photo-section {
+            margin-bottom: 2rem;
+        }
+
+        .substance-photo-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .substance-photo {
+            max-width: 400px;
+            max-height: 300px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        /* Acquisitions */
+        .acquisitions-section h3 {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .acquisitions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .acquisition-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .acquisition-card:hover {
+            border-color: var(--text-muted);
+        }
+
+        .acquisition-card.expanded {
+            grid-column: 1 / -1;
+            max-width: 800px;
+        }
+
+        .acquisition-image-container {
+            position: relative;
+            background: var(--bg);
+            cursor: pointer;
+        }
+
+        .acquisition-image {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+        }
+
+        .acquisition-card.expanded .acquisition-image {
+            height: 400px;
+        }
+
+        .acquisition-timestamp {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0,0,0,0.7);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .acquisition-info {
+            padding: 1rem;
+        }
+
+        .acquisition-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .acquisition-substance {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .acquisition-score {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .acquisition-score.high { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+        .acquisition-score.medium { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+        .acquisition-score.low { background: rgba(239, 68, 68, 0.2); color: var(--error); }
+
+        .acquisition-matches {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .acquisition-matches h4 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .match-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .match-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .acquisition-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .acquisition-actions .btn {
+            flex: 1;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.75rem;
+        }
+
+        /* Plot Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            border-color: var(--text);
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 85vh;
+            display: block;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>spettromiao <span>Remote Data Viewer</span></h1>
+        <div class="connection-form">
+            <input type="url" id="serverUrl" placeholder="CouchDB Server URL (e.g., https://kat.example.com)">
+            <input type="password" id="apiToken" placeholder="API Token">
+            <button class="btn btn-primary" id="connectBtn">Connect</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Sessions</h2>
+                <span class="session-count" id="sessionCount">-</span>
+            </div>
+            <div class="session-list" id="sessionList">
+                <div class="placeholder">Enter server details and click Connect</div>
+            </div>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <div class="placeholder">Select a session to view details</div>
+        </main>
+    </div>
+
+    <!-- Plot Modal -->
+    <div class="modal" id="plotModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closePlotModal">&times;</button>
+            <img class="modal-image" id="plotImage" src="" alt="Spectrum Plot">
+        </div>
+    </div>
+
+    <script>
+        // State
+        let sessions = [];
+        let currentSession = null;
+        let blobUrls = [];
+
+        // Elements
+        const serverUrlInput = document.getElementById('serverUrl');
+        const apiTokenInput = document.getElementById('apiToken');
+        const connectBtn = document.getElementById('connectBtn');
+        const sessionList = document.getElementById('sessionList');
+        const sessionCount = document.getElementById('sessionCount');
+        const mainContent = document.getElementById('mainContent');
+        const plotModal = document.getElementById('plotModal');
+        const plotImage = document.getElementById('plotImage');
+        const closePlotModal = document.getElementById('closePlotModal');
+
+        // Load saved credentials
+        const savedUrl = localStorage.getItem('remoteViewer_serverUrl');
+        const savedToken = localStorage.getItem('remoteViewer_token');
+        if (savedUrl) serverUrlInput.value = savedUrl;
+        if (savedToken) apiTokenInput.value = savedToken;
+
+        // Event Listeners
+        connectBtn.addEventListener('click', connect);
+        closePlotModal.addEventListener('click', () => plotModal.classList.remove('active'));
+        plotModal.addEventListener('click', (e) => {
+            if (e.target === plotModal) plotModal.classList.remove('active');
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') plotModal.classList.remove('active');
+        });
+
+        // Connect to CouchDB
+        async function connect() {
+            const serverUrl = serverUrlInput.value.trim();
+            const token = apiTokenInput.value.trim();
+
+            if (!serverUrl || !token) {
+                alert('Please enter server URL and API token');
+                return;
+            }
+
+            // Save credentials
+            localStorage.setItem('remoteViewer_serverUrl', serverUrl);
+            localStorage.setItem('remoteViewer_token', token);
+
+            sessionList.innerHTML = '<div class="loading">Loading sessions...</div>';
+            sessionCount.textContent = '-';
+
+            try {
+                const response = await fetch(`${serverUrl}/kat_sessions/_all_docs?include_docs=true`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                sessions = data.rows
+                    .map(row => row.doc)
+                    .filter(doc => doc && doc.type === 'session')
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                renderSessionList();
+            } catch (e) {
+                sessionList.innerHTML = `<div class="error">Failed to connect: ${e.message}</div>`;
+                sessionCount.textContent = '-';
+            }
+        }
+
+        // Render session list
+        function renderSessionList() {
+            if (sessions.length === 0) {
+                sessionList.innerHTML = '<div class="placeholder">No sessions found</div>';
+                sessionCount.textContent = '0';
+                return;
+            }
+
+            sessionCount.textContent = sessions.length;
+
+            sessionList.innerHTML = sessions.map((session, idx) => {
+                const acquisitionCount = session.acquisitions?.length || 0;
+                let topMatch = null, topScore = null;
+
+                for (const acq of (session.acquisitions || [])) {
+                    if (acq.identification?.length > 0) {
+                        topMatch = acq.identification[0].substance;
+                        topScore = acq.identification[0].score;
+                        break;
+                    }
+                }
+
+                const confidenceClass = topScore ? getConfidenceClass(topScore) : '';
+
+                return `
+                    <div class="session-item" data-index="${idx}">
+                        <div class="session-item-header">
+                            <span class="session-item-event">${escapeHtml(session.event || 'Unnamed')}</span>
+                            <span class="session-item-date">${formatDate(session.createdAt)}</span>
+                        </div>
+                        <div class="session-item-details">
+                            <span>${escapeHtml(session.substance || '-')}</span>
+                            <span>${acquisitionCount} acquisition${acquisitionCount !== 1 ? 's' : ''}</span>
+                            ${topMatch ? `<span class="session-item-match ${confidenceClass}">${escapeHtml(topMatch)} (${topScore.toFixed(2)})</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers
+            sessionList.querySelectorAll('.session-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const idx = parseInt(item.dataset.index);
+                    selectSession(idx);
+                });
+            });
+        }
+
+        // Select and display session
+        async function selectSession(idx) {
+            // Clean up previous blob URLs
+            blobUrls.forEach(url => URL.revokeObjectURL(url));
+            blobUrls = [];
+
+            // Update active state
+            sessionList.querySelectorAll('.session-item').forEach((item, i) => {
+                item.classList.toggle('active', i === idx);
+            });
+
+            currentSession = sessions[idx];
+            mainContent.innerHTML = '<div class="loading">Loading session details...</div>';
+
+            await renderSessionDetail(currentSession);
+        }
+
+        // Render session detail
+        async function renderSessionDetail(session) {
+            const serverUrl = serverUrlInput.value.trim();
+            const token = apiTokenInput.value.trim();
+
+            let html = `
+                <div class="session-detail">
+                    <h2>${escapeHtml(session.event || 'Unnamed Session')}</h2>
+
+                    <div class="session-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Date</span>
+                            <span class="meta-value">${formatDate(session.createdAt)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Substance</span>
+                            <span class="meta-value">${escapeHtml(session.substance || '-')}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Appearance</span>
+                            <span class="meta-value">${escapeHtml(session.appearance === 'other' ? session.customAppearance : session.appearance) || '-'}</span>
+                        </div>
+                        ${session.notes ? `
+                        <div class="meta-item">
+                            <span class="meta-label">Notes</span>
+                            <span class="meta-value">${escapeHtml(session.notes)}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+            `;
+
+            // Substance photo
+            if (session._attachments?.['substance_photo.jpg']) {
+                const photoUrl = await fetchAttachment(serverUrl, token, session._id, 'substance_photo.jpg');
+                if (photoUrl) {
+                    html += `
+                        <div class="substance-photo-section">
+                            <h3>Substance Photo</h3>
+                            <img src="${photoUrl}" alt="Substance" class="substance-photo">
+                        </div>
+                    `;
+                }
+            }
+
+            // Acquisitions
+            const acquisitions = session.acquisitions || [];
+            html += `
+                <div class="acquisitions-section">
+                    <h3>Acquisitions (${acquisitions.length})</h3>
+                    <div class="acquisitions-grid">
+            `;
+
+            for (let i = 0; i < acquisitions.length; i++) {
+                const acq = acquisitions[i];
+                const photoName = `${acq.timestamp}_photo.jpg`;
+                const plotName = `${acq.timestamp}_summaryPlot.png`;
+
+                let photoUrl = '';
+                if (session._attachments?.[photoName]) {
+                    photoUrl = await fetchAttachment(serverUrl, token, session._id, photoName);
+                }
+
+                const identification = acq.identification || [];
+                const top = identification[0];
+                const confidenceClass = top ? getConfidenceClass(top.score) : '';
+
+                html += `
+                    <div class="acquisition-card" data-index="${i}">
+                        <div class="acquisition-image-container" data-plot="${plotName}">
+                            <img src="${photoUrl || ''}" alt="Acquisition ${i + 1}" class="acquisition-image">
+                            <span class="acquisition-timestamp">${formatTime(acq.timestamp)}</span>
+                        </div>
+                        <div class="acquisition-info">
+                            <div class="acquisition-result">
+                                <span class="acquisition-substance">${top ? escapeHtml(top.substance) : 'Unknown'}</span>
+                                ${top ? `<span class="acquisition-score ${confidenceClass}">${top.score.toFixed(3)}</span>` : ''}
+                            </div>
+                            ${identification.length > 1 ? `
+                            <div class="acquisition-matches">
+                                <h4>Other Matches</h4>
+                                <div class="match-list">
+                                    ${identification.slice(1, 4).map(m => `
+                                        <div class="match-item">
+                                            <span>${escapeHtml(m.substance)}</span>
+                                            <span>${m.score.toFixed(3)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ` : ''}
+                            <div class="acquisition-actions">
+                                <button class="btn view-plot-btn" data-plot="${plotName}" ${!session._attachments?.[plotName] ? 'disabled' : ''}>View Plot</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div></div></div>';
+            mainContent.innerHTML = html;
+
+            // Add plot view handlers
+            mainContent.querySelectorAll('.view-plot-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const plotName = btn.dataset.plot;
+                    if (session._attachments?.[plotName]) {
+                        const plotUrl = await fetchAttachment(serverUrl, token, session._id, plotName);
+                        if (plotUrl) {
+                            plotImage.src = plotUrl;
+                            plotModal.classList.add('active');
+                        }
+                    }
+                });
+            });
+
+            // Click on image to view plot
+            mainContent.querySelectorAll('.acquisition-image-container').forEach(container => {
+                container.addEventListener('click', async () => {
+                    const plotName = container.dataset.plot;
+                    if (session._attachments?.[plotName]) {
+                        const plotUrl = await fetchAttachment(serverUrl, token, session._id, plotName);
+                        if (plotUrl) {
+                            plotImage.src = plotUrl;
+                            plotModal.classList.add('active');
+                        }
+                    }
+                });
+            });
+        }
+
+        // Fetch attachment as blob URL
+        async function fetchAttachment(serverUrl, token, docId, attachmentName) {
+            try {
+                const url = `${serverUrl}/kat_sessions/${encodeURIComponent(docId)}/${encodeURIComponent(attachmentName)}`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) return null;
+
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                blobUrls.push(blobUrl);
+                return blobUrl;
+            } catch (e) {
+                console.error('Failed to fetch attachment:', e);
+                return null;
+            }
+        }
+
+        // Utility functions
+        function getConfidenceClass(score) {
+            if (score >= 0.85) return 'high';
+            if (score >= 0.7) return 'medium';
+            return 'low';
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '-';
+            return new Date(isoString).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '-';
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-connect if credentials are saved
+        if (savedUrl && savedToken) {
+            connect();
+        }
+    </script>
+</body>
+</html>
