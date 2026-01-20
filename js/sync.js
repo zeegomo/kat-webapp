@@ -318,6 +318,28 @@ async function testConnection() {
 // ============================================================================
 
 /**
+ * Perform background sync if enabled and configured.
+ * Queues unsynced sessions and syncs all pending items.
+ * @param {string} trigger - Description of what triggered the sync (for logging)
+ * @returns {Promise<void>}
+ */
+async function performBackgroundSync(trigger) {
+    const settings = await db.getSettings();
+    if (!settings.autoSync || !settings.syncServerUrl || !settings.syncToken) {
+        return;
+    }
+
+    // Queue any unsynced sessions first (just like "Sync Now" button does)
+    await queueAllUnsyncedSessions();
+
+    const pending = await db.getPendingSync();
+    if (pending.length > 0) {
+        console.log(`${trigger}: ${pending.length} pending items`);
+        await syncAll();
+    }
+}
+
+/**
  * Start background sync.
  * Syncs when online and periodically checks for pending items.
  * @param {number} intervalMs - Check interval in milliseconds (default: 5 minutes)
@@ -335,14 +357,7 @@ function startBackgroundSync(intervalMs = 300000) {
     // Periodic check
     syncInterval = setInterval(async () => {
         if (navigator.onLine) {
-            const settings = await db.getSettings();
-            if (settings.autoSync && settings.syncServerUrl && settings.syncToken) {
-                const pending = await db.getPendingSync();
-                if (pending.length > 0) {
-                    console.log(`Background sync: ${pending.length} pending items`);
-                    await syncAll();
-                }
-            }
+            await performBackgroundSync('Background sync');
         }
     }, intervalMs);
 
@@ -369,15 +384,7 @@ function stopBackgroundSync() {
  */
 async function onOnline() {
     console.log('Network online - checking for pending sync');
-    const settings = await db.getSettings();
-
-    if (settings.autoSync && settings.syncServerUrl && settings.syncToken) {
-        const pending = await db.getPendingSync();
-        if (pending.length > 0) {
-            console.log(`Auto-syncing ${pending.length} pending items`);
-            await syncAll();
-        }
-    }
+    await performBackgroundSync('Auto-sync');
 }
 
 /**
