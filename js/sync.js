@@ -66,13 +66,19 @@ async function syncSession(sessionId) {
 
     // Add acquisitions and their files
     for (const acq of acquisitions) {
-        // Add acquisition metadata
+        // Add acquisition metadata (including per-acquisition substance info)
         doc.acquisitions.push({
             timestamp: acq.timestamp,
             spectrum: acq.spectrum,
             identification: acq.identification,
             laserWavelength: acq.laserWavelength,
             detectionMode: acq.detectionMode,
+            // Per-acquisition metadata (captured at time of acquisition)
+            // Falls back to session values for backwards compatibility with older acquisitions
+            substance: acq.substance ?? session.substance,
+            appearance: acq.appearance ?? session.appearance,
+            customAppearance: acq.customAppearance ?? session.customAppearance,
+            substanceDescription: acq.substanceDescription ?? session.substanceDescription,
         });
 
         // Add files as base64 attachments

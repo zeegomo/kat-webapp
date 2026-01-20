@@ -1207,6 +1207,7 @@ async function captureComplete(result) {
             }
 
             // Store acquisition in IndexedDB
+            // Include current session metadata so each acquisition captures state at time of recording
             const acquisition = await db.addAcquisition(
                 state.currentSessionId,
                 {
@@ -1216,6 +1217,11 @@ async function captureComplete(result) {
                     laserWavelength: result.laser_wavelength,
                     detectionMode: result.detection_mode,
                     csv: result.csv,
+                    // Capture session metadata at time of acquisition
+                    substance: state.session?.substance || '',
+                    appearance: state.session?.appearance || '',
+                    customAppearance: state.session?.customAppearance || '',
+                    substanceDescription: state.session?.substanceDescription || '',
                 },
                 files
             );
@@ -1899,6 +1905,22 @@ async function exportTest() {
         for (let i = 0; i < state.acquisitions.length; i++) {
             const acq = state.acquisitions[i];
             const prefix = `acquisition_${String(i + 1).padStart(3, '0')}`;
+
+            // Per-acquisition metadata (captured at time of acquisition)
+            // Falls back to session values for backwards compatibility with older acquisitions
+            entries.push({
+                name: `${prefix}_metadata.json`,
+                data: encoder.encode(JSON.stringify({
+                    timestamp: acq.timestamp,
+                    laserWavelength: acq.laserWavelength,
+                    detectionMode: acq.detectionMode,
+                    identification: acq.identification,
+                    substance: acq.substance ?? state.session?.substance ?? '',
+                    appearance: acq.appearance ?? state.session?.appearance ?? '',
+                    customAppearance: acq.customAppearance ?? state.session?.customAppearance ?? '',
+                    substanceDescription: acq.substanceDescription ?? state.session?.substanceDescription ?? '',
+                }, null, 2)),
+            });
 
             // Photo
             if (acq.fileIds?.photo) {

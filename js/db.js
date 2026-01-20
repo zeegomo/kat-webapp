@@ -313,6 +313,11 @@ async function addAcquisition(sessionId, data, files = {}) {
         csv: data.csv,  // CSV string
         createdAt: new Date().toISOString(),
         fileIds: {},
+        // Per-acquisition metadata (captured at time of acquisition)
+        substance: data.substance || '',
+        appearance: data.appearance || '',
+        customAppearance: data.customAppearance || '',
+        substanceDescription: data.substanceDescription || '',
     };
 
     // Store files
