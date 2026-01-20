@@ -1015,12 +1015,14 @@ body {
 
 .sync-actions {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-md);
 }
 
 .sync-actions .btn {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 120px;
 }
 
 .sync-status {
