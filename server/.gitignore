@@ -1,0 +1,11 @@
+# Never commit secrets
+.env
+
+# Backup files (if stored locally during dev)
+*.gz
+*.tar
+
+# Editor files
+*.swp
+*~
+.DS_Store

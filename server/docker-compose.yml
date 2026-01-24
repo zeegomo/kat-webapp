@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  couchdb:
+    image: couchdb:3
+    container_name: kat-couchdb
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: ${COUCH_PASSWORD}
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+      - couchdb_config:/opt/couchdb/etc/local.d
+    ports:
+      # Only bind to localhost - Nginx will proxy external requests
+      - "127.0.0.1:5984:5984"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  couchdb_data:
+    name: kat-couchdb-data
+  couchdb_config:
+    name: kat-couchdb-config
