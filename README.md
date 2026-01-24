@@ -1,8 +1,29 @@
 # spettromiao Webapp
 
-Mobile webapp for the spettromiao DIY Raman spectrometer. This is the frontend that runs in your browser and communicates with the Raspberry Pi API server.
+A complete mobile spectrometer data collection system with PWA frontend and CouchDB backend for data synchronization.
 
-## Architecture
+## Components
+
+This repository contains two main components:
+
+### 1. Mobile PWA (root directory)
+Progressive web app for field testing with the spettromiao DIY Raman spectrometer. This is the frontend that runs in your browser and communicates with the Raspberry Pi API server.
+
+### 2. CouchDB Server (server/ directory)
+Production-ready CouchDB backend for syncing session data across devices. See [server/README.md](server/README.md) for complete setup instructions.
+
+## Quick Start
+
+### Deploy the Mobile App
+Follow the [Mobile PWA Setup](#setup) below to deploy via GitHub Pages.
+
+### Deploy the Sync Server (Optional)
+If you want to sync data across devices:
+1. Set up a server (Ubuntu/Debian)
+2. Follow the [server setup guide](server/README.md)
+3. Configure the mobile app with your server URL and token
+
+## Mobile PWA Architecture
 
 The app supports two deployment methods:
 
