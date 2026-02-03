@@ -35,7 +35,7 @@ After making changes:
 ├── css/
 │   └── style.css       # Styles
 ├── js/
-│   ├── app.js          # Main app logic, Pi connectivity, LNA detection
+│   ├── app.js          # Main app logic, Pi connectivity
 │   ├── db.js           # IndexedDB storage operations
 │   ├── sync.js         # CouchDB sync functionality
 │   ├── identifier.js   # Spectrum identification logic
@@ -46,7 +46,7 @@ After making changes:
 ├── data/
 │   └── library.json    # Reference spectra library
 └── pi-loader/
-    └── index.html      # Fallback loader for Pi deployment
+    └── index.html      # Primary loader: Pi serves this, fetches app from GitHub, caches in IndexedDB
 ```
 
 ## Development
@@ -60,7 +60,7 @@ python -m http.server 8000
 
 ### Testing
 
-When running on localhost, the app uses relative API URLs (same origin) and won't attempt LNA.
+When running on localhost, the app uses relative API URLs (same origin). Locale files are served directly; the preloaded locale fallback is only used when rendered via pi-loader.
 
 ## Commit Guidelines
 

@@ -10,21 +10,8 @@
 // Configuration
 // ============================================================================
 
-// Pi API URL - Auto-detect based on how the app is served
-// If served from the Pi (192.168.4.1), use relative URLs (same origin)
-// Otherwise, use the full Pi URL (for GitHub Pages with Local Network Access)
-const PI_API_URL = (() => {
-    const host = window.location.hostname;
-    // If running from Pi or localhost, use relative path (same origin)
-    if (host === '192.168.4.1' || host === 'localhost' || host === '127.0.0.1') {
-        return '';  // Relative URL - same origin
-    }
-    // Otherwise use full URL (GitHub Pages - requires Local Network Access)
-    return 'https://192.168.4.1';
-})();
-
-// Whether we need Local Network Access (when served from external origin)
-const NEEDS_LNA = PI_API_URL !== '';
+// Pi API URL - always same-origin (app is served from the Pi via pi-loader)
+const PI_API_URL = '';
 
 // ============================================================================
 // State (UI state only - data is in IndexedDB)
@@ -381,16 +368,10 @@ const api = {
         console.log(`API ${method} ${url}`);
 
         try {
-            // Build fetch options with Local Network Access if needed
             const fetchOptions = {
                 ...options,
                 signal: controller.signal,
             };
-            // Add targetAddressSpace for Local Network Access when served from external origin
-            // This enables Chrome 142+ LNA and bypasses mixed content restrictions
-            if (NEEDS_LNA) {
-                fetchOptions.targetAddressSpace = 'local';
-            }
 
             const response = await fetch(url, fetchOptions);
             console.log(`API ${method} ${url} -> ${response.status}`);
@@ -434,12 +415,11 @@ const api = {
 };
 
 // ============================================================================
-// SSE Streaming Helper (for Local Network Access compatibility)
+// SSE Streaming Helper
 // ============================================================================
 
 /**
- * Fetch SSE stream with Local Network Access support.
- * EventSource doesn't support fetch options, so we use fetch + ReadableStream.
+ * Fetch SSE stream using fetch + ReadableStream.
  *
  * @param {string} url - The SSE endpoint URL
  * @param {Object} handlers - Event handlers { onProgress, onResult, onError, onClose }
@@ -450,9 +430,6 @@ async function fetchSSE(url, handlers, controller) {
     const fetchOptions = {
         signal: controller.signal,
     };
-    if (NEEDS_LNA) {
-        fetchOptions.targetAddressSpace = 'local';
-    }
 
     const response = await fetch(url, fetchOptions);
     if (!response.ok) {
@@ -998,9 +975,6 @@ async function startPreview() {
             resetPreviewUI();
         };
 
-        // Note: The startPreview() API call above has already triggered the LNA permission
-        // prompt (via targetAddressSpace: 'local' in fetchWithTimeout). Once granted, the
-        // permission applies to all requests to this origin, so img.src will work.
         elements.previewImage.src = `${PI_API_URL}/api/preview/stream`;
         elements.previewImage.classList.remove('hidden');
         elements.previewPlaceholder.classList.add('hidden');
@@ -2387,12 +2361,15 @@ const UPDATE_APP_FILES = [
     'index.html',
     'css/style.css',
     'js/db.js',
+    'js/i18n.js',
     'js/identifier.js',
     'js/sync.js',
     'js/app.js',
     'manifest.json',
     'sw.js',
-    'data/library.json'
+    'data/library.json',
+    'locales/en.json',
+    'locales/it.json'
 ];
 
 // Store remote version when available
@@ -2584,6 +2561,20 @@ function renderAppFromFiles(files) {
             const dataUrl = 'data:application/json,' + encodeURIComponent(files['manifest.json']);
             manifestLink.setAttribute('href', dataUrl);
         }
+    }
+
+    // Inject preloaded locale data so i18n works without fetching locale files
+    const localeData = {};
+    if (files['locales/en.json']) {
+        try { localeData.en = JSON.parse(files['locales/en.json']); } catch (e) {}
+    }
+    if (files['locales/it.json']) {
+        try { localeData.it = JSON.parse(files['locales/it.json']); } catch (e) {}
+    }
+    if (Object.keys(localeData).length > 0) {
+        const localeScript = doc.createElement('script');
+        localeScript.textContent = `window.__PRELOADED_LOCALES = ${JSON.stringify(localeData)};`;
+        doc.head.insertBefore(localeScript, doc.head.firstChild);
     }
 
     // Write the complete document
