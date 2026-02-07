@@ -2406,19 +2406,28 @@ function openLoaderCacheDB() {
 }
 
 async function getCurrentVersion() {
+    // Try loader cache DB first (used when served via pi-loader)
     try {
         const db = await openLoaderCacheDB();
-        return new Promise((resolve, reject) => {
+        const version = await new Promise((resolve, reject) => {
             const tx = db.transaction(VERSION_CONFIG.loaderCacheStore, 'readonly');
             const store = tx.objectStore(VERSION_CONFIG.loaderCacheStore);
             const request = store.get(VERSION_CONFIG.cacheVersionKey);
             request.onerror = () => reject(request.error);
             request.onsuccess = () => resolve(request.result?.content || null);
         });
+        if (version) return version;
     } catch (error) {
-        console.error('Failed to get current version:', error);
-        return null;
+        console.error('Failed to get current version from loader cache:', error);
     }
+
+    // Fallback: fetch version.txt from same origin (direct Flask serving)
+    try {
+        const resp = await fetch('version.txt', { signal: AbortSignal.timeout(3000) });
+        if (resp.ok) return (await resp.text()).trim();
+    } catch (e) { }
+
+    return null;
 }
 
 async function fetchRemoteVersion() {
