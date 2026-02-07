@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 WorkingDirectory=/opt/pi-loader
-ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:80 server:app
+ExecStart=/opt/pi-loader/venv/bin/gunicorn -b 0.0.0.0:80 server:app
 Restart=always
 
 [Install]
