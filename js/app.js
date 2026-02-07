@@ -10,8 +10,16 @@
 // Configuration
 // ============================================================================
 
-// Pi API URL - always same-origin (app is served from the Pi via pi-loader)
-const PI_API_URL = '';
+// Pi API URL - same-origin when running on Pi or localhost, cross-origin otherwise
+const PI_API_URL = (() => {
+    const host = window.location.hostname;
+    if (host === '192.168.4.1' || host === 'localhost' || host === '127.0.0.1') {
+        return '';
+    }
+    return 'https://192.168.4.1';
+})();
+
+const NEEDS_LNA = PI_API_URL !== '';
 
 // ============================================================================
 // State (UI state only - data is in IndexedDB)
@@ -373,6 +381,10 @@ const api = {
                 signal: controller.signal,
             };
 
+            if (NEEDS_LNA) {
+                fetchOptions.targetAddressSpace = 'local';
+            }
+
             const response = await fetch(url, fetchOptions);
             console.log(`API ${method} ${url} -> ${response.status}`);
             if (!response.ok) {
@@ -430,6 +442,10 @@ async function fetchSSE(url, handlers, controller) {
     const fetchOptions = {
         signal: controller.signal,
     };
+
+    if (NEEDS_LNA) {
+        fetchOptions.targetAddressSpace = 'local';
+    }
 
     const response = await fetch(url, fetchOptions);
     if (!response.ok) {
@@ -2925,7 +2941,8 @@ function registerServiceWorkerInBackground() {
     if (!('serviceWorker' in navigator)) return;
 
     // The Pi loader already handles caching; avoid SW registration on the Pi.
-    if (window.location.hostname === '192.168.4.1') return;
+    const host = window.location.hostname;
+    if (host === '192.168.4.1' || host === 'localhost' || host === '127.0.0.1') return;
 
     try {
         navigator.serviceWorker.register('sw.js')
