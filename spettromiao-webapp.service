@@ -1,0 +1,15 @@
+[Unit]
+Description=Spettromiao Webapp
+After=network.target
+
+[Service]
+Type=simple
+User=zeegomo
+WorkingDirectory=/opt/spettromiao-webapp
+ExecStart=/opt/spettromiao-webapp/.venv/bin/gunicorn --bind 0.0.0.0:80 --workers 1 --threads 4 "backend:create_app()"
+Restart=on-failure
+RestartSec=5
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
