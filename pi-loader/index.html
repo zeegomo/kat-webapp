@@ -74,12 +74,15 @@
             'index.html',
             'css/style.css',
             'js/db.js',
+            'js/i18n.js',
             'js/identifier.js',
             'js/sync.js',
             'js/app.js',
             'manifest.json',
             'sw.js',
-            'data/library.json'
+            'data/library.json',
+            'locales/en.json',
+            'locales/it.json'
         ];
 
         const statusEl = document.getElementById('status');
@@ -264,6 +267,20 @@
                     const dataUrl = 'data:application/json,' + encodeURIComponent(files['manifest.json']);
                     manifestLink.setAttribute('href', dataUrl);
                 }
+            }
+
+            // Inject preloaded locale data so i18n works without fetching locale files
+            const localeData = {};
+            if (files['locales/en.json']) {
+                try { localeData.en = JSON.parse(files['locales/en.json']); } catch (e) {}
+            }
+            if (files['locales/it.json']) {
+                try { localeData.it = JSON.parse(files['locales/it.json']); } catch (e) {}
+            }
+            if (Object.keys(localeData).length > 0) {
+                const localeScript = doc.createElement('script');
+                localeScript.textContent = `window.__PRELOADED_LOCALES = ${JSON.stringify(localeData)};`;
+                doc.head.insertBefore(localeScript, doc.head.firstChild);
             }
 
             // Write the complete document

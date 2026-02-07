@@ -143,22 +143,30 @@ class SpectrumIdentifier {
         try {
             if (onProgress) onProgress(10);
 
-            // Load from static file bundled with webapp
-            const response = await fetch('data/library.json');
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            let library;
+
+            // Try loading from static file first
+            try {
+                const response = await fetch('data/library.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                if (onProgress) onProgress(50);
+                library = await response.json();
+            } catch (fetchError) {
+                // Fetch failed (e.g. running via pi-loader where relative path doesn't resolve)
+                // Fall back to the pi-loader's IndexedDB cache
+                console.warn('Identifier: fetch failed, trying loader cache:', fetchError.message);
+                if (onProgress) onProgress(30);
+                library = await this._loadFromLoaderCache();
+                if (onProgress) onProgress(50);
             }
-
-            if (onProgress) onProgress(50);
-
-            const library = await response.json();
 
             if (!library.substances || library.substances.length === 0) {
                 console.warn('Identifier: Library is empty (placeholder). Generate with build_browser_library.py');
-                // Still cache the empty library to prevent repeated fetch attempts
                 this.library = library;
                 this.version = library.version || null;
-                this.ready = false;  // Not ready for identification, but loaded
+                this.ready = false;
                 return true;
             }
 
@@ -179,6 +187,42 @@ class SpectrumIdentifier {
             console.error('Identifier: Failed to fetch library:', e);
             return false;
         }
+    }
+
+    /**
+     * Load library.json from the pi-loader's IndexedDB cache.
+     * This is a separate database from the app's own IndexedDB (managed by db.js).
+     * The pi-loader caches all fetched files (including library.json) in
+     * 'spettromiao-loader-cache', so we can read from it on first load when
+     * the relative fetch('data/library.json') fails inside the rendered app.
+     * @returns {Promise<Object>} Parsed library object
+     */
+    async _loadFromLoaderCache() {
+        const cacheDb = await new Promise((resolve, reject) => {
+            const request = indexedDB.open('spettromiao-loader-cache', 1);
+            request.onerror = () => reject(new Error('Failed to open loader cache DB'));
+            request.onsuccess = () => resolve(request.result);
+        });
+
+        if (!cacheDb.objectStoreNames.contains('app-files')) {
+            cacheDb.close();
+            throw new Error('Loader cache store not found');
+        }
+
+        const result = await new Promise((resolve, reject) => {
+            const tx = cacheDb.transaction('app-files', 'readonly');
+            const req = tx.objectStore('app-files').get('data/library.json');
+            req.onerror = () => reject(req.error || new Error('Failed to read loader cache'));
+            req.onsuccess = () => resolve(req.result);
+        });
+
+        cacheDb.close();
+
+        if (!result || !result.content) {
+            throw new Error('library.json not found in loader cache');
+        }
+
+        return JSON.parse(result.content);
     }
 
     /**

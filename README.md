@@ -15,7 +15,7 @@ Production-ready CouchDB backend for syncing session data across devices. See [s
 ## Quick Start
 
 ### Deploy the Mobile App
-Follow the [Mobile PWA Setup](#setup) below to deploy via GitHub Pages.
+Follow the [Setup](#setup) below to deploy via the Pi-hosted loader.
 
 ### Deploy the Sync Server (Optional)
 If you want to sync data across devices:
@@ -25,41 +25,7 @@ If you want to sync data across devices:
 
 ## Mobile PWA Architecture
 
-The app supports two deployment methods:
-
-### Method 1: GitHub Pages + Local Network Access (Recommended)
-
-The app is served directly from GitHub Pages and uses **Local Network Access (LNA)** to communicate with the Pi:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    GitHub Pages + LNA                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   1. User connects phone to Pi's WiFi (spettromiao)             │
-│                                                                 │
-│   2. Opens your GitHub Pages URL in browser                     │
-│      └── https://yourusername.github.io/spettromiao-webapp              │
-│                                                                 │
-│   3. App served from GitHub (HTTPS) communicates with Pi        │
-│      └── Uses Local Network Access to reach https://192.168.4.1 │
-│                                                                 │
-│   4. Browser prompts to allow private network access            │
-│      └── User grants permission once                            │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Benefits:**
-- Updates automatically from GitHub (no Pi deployment needed)
-- Simple setup - just enable GitHub Pages
-- Secure HTTPS connection
-
-**Requirements:** Chrome/Edge/Safari (iOS 17+)
-
-### Method 2: Pi-Loader (Fallback)
-
-For browsers without LNA support or fully offline scenarios:
+The app is deployed via a lightweight loader served by the Raspberry Pi. The loader fetches the full app from GitHub Pages, caches it in IndexedDB, and renders it inline. All API calls are same-origin.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -80,10 +46,11 @@ For browsers without LNA support or fully offline scenarios:
 ```
 
 **Benefits:**
-- Works in any browser (no LNA needed)
+- Works in any browser (no special APIs needed)
 - Fully offline after first load
 - No permission prompts
 - Same-origin API calls
+- Updates automatically from GitHub when internet is available
 
 ## Setup
 
@@ -112,9 +79,7 @@ Ensure your Raspberry Pi:
 - Runs an HTTPS API server on `https://192.168.4.1`
 - Has a valid SSL certificate (self-signed is OK, but users must accept it once)
 
-### Step 3: (Optional) Set up Pi-Loader for Fallback
-
-If you want to support browsers without LNA or provide a fallback:
+### Step 3: Set up the Pi-Loader
 
 1. Edit `pi-loader/index.html` and update line 67:
    ```javascript
@@ -142,17 +107,6 @@ If you want to support browsers without LNA or provide a fallback:
 
 ## Usage
 
-### Method 1: GitHub Pages + LNA (Recommended)
-
-1. Connect your phone to the Pi's WiFi network (`spettromiao`)
-2. Open your GitHub Pages URL: `https://yourusername.github.io/spettromiao-webapp`
-3. Browser will prompt to allow access to devices on local network
-4. Grant permission - this allows the app to communicate with the Pi
-5. Accept the Pi's SSL certificate if prompted
-6. Start using the app!
-
-### Method 2: Pi-Loader (Fallback)
-
 1. Connect your phone to the Pi's WiFi network (`spettromiao`)
 2. Open `https://192.168.4.1` in your browser
 3. First time: Loader downloads app from GitHub (needs internet via Pi or mobile data)
@@ -162,19 +116,17 @@ If you want to support browsers without LNA or provide a fallback:
 ## Updating the Webapp
 
 1. Make changes to files
-2. Bump version in `version.txt` (e.g., `1.0.0` → `1.0.1`)
+2. Bump version in `version.txt` (e.g., `0.2.10` → `0.2.11`)
 3. Commit and push to GitHub
 
 ```bash
-echo "1.0.1" > version.txt
+echo "0.2.11" > version.txt
 git add .
 git commit -m "Update webapp"
 git push
 ```
 
-Updates are deployed automatically:
-- **GitHub Pages + LNA**: Users get the new version on their next visit (or after refresh)
-- **Pi-Loader**: Loader detects the new version and downloads updates when internet is available
+The Pi-loader detects the new version and downloads updates when internet is available. Users can also check for updates manually via Settings > Check for Updates.
 
 ## File Structure
 
@@ -182,19 +134,23 @@ Updates are deployed automatically:
 spettromiao-webapp/
 ├── index.html          # Main app page
 ├── manifest.json       # PWA manifest
-├── sw.js               # Service worker
+├── sw.js               # Service worker (local dev only)
 ├── version.txt         # Version for cache busting
 ├── css/
 │   └── style.css       # Styles
 ├── js/
-│   ├── app.js          # Main app logic (includes LNA detection)
+│   ├── app.js          # Main app logic, Pi connectivity
 │   ├── db.js           # IndexedDB storage
+│   ├── i18n.js         # Internationalization
 │   ├── identifier.js   # Spectrum identification
 │   └── sync.js         # CouchDB sync
+├── locales/
+│   ├── en.json         # English translations
+│   └── it.json         # Italian translations
 ├── data/
 │   └── library.json    # Reference spectra library
 ├── pi-loader/
-│   └── index.html      # Fallback loader for Pi (fetches from GitHub)
+│   └── index.html      # Loader served by Pi (fetches app from GitHub)
 └── icons/              # PWA icons
 ```
 
@@ -208,23 +164,11 @@ python -m http.server 8000
 # Open http://localhost:8000
 ```
 
-When running on localhost, the app automatically uses relative API URLs (same origin), so it won't attempt to use Local Network Access.
-
-### Testing with GitHub Pages
-
-You can test the full LNA flow by:
-1. Deploying to GitHub Pages
-2. Connecting to the Pi's WiFi
-3. Opening your GitHub Pages URL
-4. Granting LNA permission when prompted
-
-For UI development without the Pi, you can still access GitHub Pages, but API calls will fail gracefully.
+When running on localhost, the app uses relative API URLs (same origin). Locale files are served directly via HTTP; the service worker handles caching for local development.
 
 ## Pi Connectivity
 
-The app automatically detects whether it needs Local Network Access based on where it's served from:
-- When served from GitHub Pages: Uses LNA to communicate with `https://192.168.4.1`
-- When served from localhost/Pi: Uses relative URLs (same origin)
+The app uses relative URLs for all API calls (same origin), since the Pi serves the app via pi-loader.
 
 The app shows a warning banner when the Pi is not reachable:
 - Checks connectivity every 2 seconds when disconnected
@@ -234,11 +178,12 @@ The app shows a warning banner when the Pi is not reachable:
 ## Features
 
 - **Wizard-style interface** for field testing
-- **Local Network Access** for Pi communication from GitHub Pages
-- **Offline-capable** with service worker caching
+- **Pi-hosted deployment** via lightweight loader
+- **Offline-capable** with IndexedDB caching
 - **Local data storage** using IndexedDB
 - **Optional sync** to CouchDB server
 - **Browser-based spectrum identification** with reference library
+- **Internationalization** (English and Italian)
 - **Dark mode** support
 - **PWA-ready** with manifest and icons
 

@@ -64,6 +64,12 @@ const i18n = {
             throw new Error(`Unsupported language: ${lang}`);
         }
 
+        // Use preloaded locale data if available (injected by pi-loader or update renderer)
+        if (window.__PRELOADED_LOCALES && window.__PRELOADED_LOCALES[lang]) {
+            this.translations = window.__PRELOADED_LOCALES[lang];
+            return;
+        }
+
         try {
             const response = await fetch(`./locales/${lang}.json`);
             if (!response.ok) {
