@@ -759,6 +759,7 @@
                             ` : ''}
                             <div class="acquisition-actions">
                                 <button class="btn view-plot-btn" data-plot="${plotName}" ${!session._attachments?.[plotName] ? 'disabled' : ''}>View Plot</button>
+                                <button class="btn download-csv-btn" data-csv="${acq.timestamp}_spectrum.csv" data-timestamp="${acq.timestamp}" ${!session._attachments?.[`${acq.timestamp}_spectrum.csv`] ? 'disabled' : ''}>Download CSV</button>
                             </div>
                         </div>
                     </div>
@@ -778,6 +779,37 @@
                             plotImage.src = plotUrl;
                             plotModal.classList.add('active');
                         }
+                    }
+                });
+            });
+
+            // Add CSV download handlers
+            mainContent.querySelectorAll('.download-csv-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const csvName = btn.dataset.csv;
+                    const timestamp = btn.dataset.timestamp;
+                    if (session._attachments?.[csvName]) {
+                        btn.textContent = 'Downloading...';
+                        btn.disabled = true;
+                        try {
+                            const url = `${serverUrl}/kat_sessions/${encodeURIComponent(session._id)}/${encodeURIComponent(csvName)}`;
+                            const response = await fetch(url, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            if (!response.ok) throw new Error('Download failed');
+                            const blob = await response.blob();
+                            const blobUrl = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = `spectrum_${timestamp}.csv`;
+                            a.click();
+                            URL.revokeObjectURL(blobUrl);
+                        } catch (e) {
+                            console.error('Failed to download CSV:', e);
+                            alert('Failed to download CSV: ' + e.message);
+                        }
+                        btn.textContent = 'Download CSV';
+                        btn.disabled = false;
                     }
                 });
             });
