@@ -149,6 +149,7 @@ const elements = {
     viewPlotBtn: document.getElementById('viewPlotBtn'),
     viewMatchesBtn: document.getElementById('viewMatchesBtn'),
     downloadCsvBtn: document.getElementById('downloadCsvBtn'),
+    downloadPhotoBtn: document.getElementById('downloadPhotoBtn'),
     galleryToggle: document.getElementById('galleryToggle'),
     galleryContent: document.getElementById('galleryContent'),
     galleryContainer: document.getElementById('galleryContainer'),
@@ -242,6 +243,7 @@ const elements = {
     historyViewPlotBtn: document.getElementById('historyViewPlotBtn'),
     historyViewMatchesBtn: document.getElementById('historyViewMatchesBtn'),
     historyDownloadCsvBtn: document.getElementById('historyDownloadCsvBtn'),
+    historyDownloadPhotoBtn: document.getElementById('historyDownloadPhotoBtn'),
 
     // Language
     langRadioEn: document.getElementById('langRadioEn'),
@@ -1396,6 +1398,9 @@ async function updateResultUI(acquisition, identification) {
 
     elements.downloadCsvBtn.onclick = () => downloadCsv(acquisition);
     elements.downloadCsvBtn.disabled = !acquisition.csv;
+
+    elements.downloadPhotoBtn.onclick = () => downloadPhoto(acquisition);
+    elements.downloadPhotoBtn.disabled = !acquisition.fileIds?.photo;
 }
 
 async function showPlot(acquisition, plotType) {
@@ -1437,6 +1442,21 @@ function downloadCsv(acquisition) {
     const a = document.createElement('a');
     a.href = url;
     a.download = `spectrum_${acquisition.timestamp}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+async function downloadPhoto(acquisition) {
+    const fileId = acquisition?.fileIds?.photo;
+    if (!fileId) return;
+
+    const file = await db.getFile(fileId);
+    if (!file?.data) return;
+
+    const url = URL.createObjectURL(file.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `photo_${acquisition.timestamp}.jpg`;
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -1784,6 +1804,9 @@ async function showHistoryAcquisition(idx) {
 
     elements.historyDownloadCsvBtn.onclick = () => downloadCsv(acquisition);
     elements.historyDownloadCsvBtn.disabled = !acquisition.csv;
+
+    elements.historyDownloadPhotoBtn.onclick = () => downloadPhoto(acquisition);
+    elements.historyDownloadPhotoBtn.disabled = !acquisition.fileIds?.photo;
 }
 
 function formatHistoryDate(isoString) {
