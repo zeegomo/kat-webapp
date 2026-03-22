@@ -409,6 +409,7 @@
 
         .acquisition-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 1rem;
         }
@@ -760,6 +761,7 @@
                             <div class="acquisition-actions">
                                 <button class="btn view-plot-btn" data-plot="${plotName}" ${!session._attachments?.[plotName] ? 'disabled' : ''}>View Plot</button>
                                 <button class="btn download-csv-btn" data-csv="${acq.timestamp}_spectrum.csv" data-timestamp="${acq.timestamp}" ${!session._attachments?.[`${acq.timestamp}_spectrum.csv`] ? 'disabled' : ''}>Download CSV</button>
+                                <button class="btn download-photo-btn" data-photo="${photoName}" data-timestamp="${acq.timestamp}" ${!session._attachments?.[photoName] ? 'disabled' : ''}>Download Photo</button>
                             </div>
                         </div>
                     </div>
@@ -809,6 +811,37 @@
                             alert('Failed to download CSV: ' + e.message);
                         }
                         btn.textContent = 'Download CSV';
+                        btn.disabled = false;
+                    }
+                });
+            });
+
+            // Add photo download handlers
+            mainContent.querySelectorAll('.download-photo-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const photoName = btn.dataset.photo;
+                    const timestamp = btn.dataset.timestamp;
+                    if (session._attachments?.[photoName]) {
+                        btn.textContent = 'Downloading...';
+                        btn.disabled = true;
+                        try {
+                            const url = `${serverUrl}/kat_sessions/${encodeURIComponent(session._id)}/${encodeURIComponent(photoName)}`;
+                            const response = await fetch(url, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            if (!response.ok) throw new Error('Download failed');
+                            const blob = await response.blob();
+                            const blobUrl = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = `photo_${timestamp}.jpg`;
+                            a.click();
+                            URL.revokeObjectURL(blobUrl);
+                        } catch (e) {
+                            console.error('Failed to download photo:', e);
+                            alert('Failed to download photo: ' + e.message);
+                        }
+                        btn.textContent = 'Download Photo';
                         btn.disabled = false;
                     }
                 });
