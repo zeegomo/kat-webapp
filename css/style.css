@@ -1248,6 +1248,58 @@ body {
 }
 
 /* ============================================================================
+   Spectrum Comparison Modal
+   ============================================================================ */
+
+.spectrum-modal-content {
+    width: min(600px, 95vw);
+    padding: var(--spacing-lg);
+    border: 2px solid var(--border);
+    border-radius: 6px 10px 8px 12px;
+    background: var(--bg);
+    box-shadow: 4px 4px 0 var(--border);
+}
+
+.spectrum-modal-content h3 {
+    margin: 0 0 var(--spacing-md) 0;
+    font-size: 1.1rem;
+}
+
+#spectrumCanvas {
+    width: 100%;
+    height: 300px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-surface, var(--bg));
+}
+
+.spectrum-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm) var(--spacing-md);
+    margin-top: var(--spacing-sm);
+    font-size: 0.8rem;
+}
+
+.spectrum-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.spectrum-legend-swatch {
+    width: 16px;
+    height: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+.spectrum-legend-swatch.dashed {
+    height: 0;
+    border-top: 2px dashed;
+}
+
+/* ============================================================================
    Startup Modal
    ============================================================================ */
 

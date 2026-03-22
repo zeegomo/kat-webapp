@@ -149,6 +149,7 @@
     "close": "Chiudi",
     "viewSummary": "Visualizza Riepilogo",
     "viewMatches": "Visualizza Corrispondenze",
+    "viewSpectrum": "Visualizza Spettro",
     "downloadCsv": "Scarica CSV",
     "downloadPhoto": "Scarica Foto",
     "testConnection": "Testa Connessione",
@@ -257,6 +258,11 @@
     },
     "matches": {
       "title": "Corrispondenze Identificazione"
+    },
+    "spectrum": {
+      "title": "Confronto Spettri",
+      "measured": "Misurato",
+      "intensity": "Intensità"
     },
     "filterBay": {
       "message": "Chiudi il vano filtri"

@@ -178,6 +178,13 @@ const elements = {
     matchesList: document.getElementById('matchesList'),
     closeMatchesModal: document.getElementById('closeMatchesModal'),
 
+    // Spectrum Modal
+    spectrumModal: document.getElementById('spectrumModal'),
+    spectrumCanvas: document.getElementById('spectrumCanvas'),
+    spectrumLegend: document.getElementById('spectrumLegend'),
+    closeSpectrumModal: document.getElementById('closeSpectrumModal'),
+    viewSpectrumBtn: document.getElementById('viewSpectrumBtn'),
+
     // Filter Bay Modal
     filterBayReminder: document.getElementById('filterBayReminder'),
     filterBayModal: document.getElementById('filterBayModal'),
@@ -1274,6 +1281,7 @@ async function captureComplete(result) {
                     timestamp: result.timestamp,
                     spectrum: result.spectrum,
                     identification: identification,
+                    preprocessedSpectrum: result.preprocessed_spectrum || null,
                     laserWavelength: result.laser_wavelength,
                     detectionMode: result.detection_mode,
                     csv: result.csv,
@@ -1396,6 +1404,13 @@ async function updateResultUI(acquisition, identification) {
         elements.viewMatchesBtn.classList.toggle('hidden', !hasMultipleMatches);
     }
 
+    if (elements.viewSpectrumBtn) {
+        const hasSpectrum = !!acquisition.preprocessedSpectrum && identifier.isReady();
+        elements.viewSpectrumBtn.onclick = () => showSpectrum(acquisition);
+        elements.viewSpectrumBtn.disabled = !hasSpectrum;
+        elements.viewSpectrumBtn.classList.toggle('hidden', !hasSpectrum);
+    }
+
     elements.downloadCsvBtn.onclick = () => downloadCsv(acquisition);
     elements.downloadCsvBtn.disabled = !acquisition.csv;
 
@@ -1432,6 +1447,188 @@ function showMatches(identification) {
 
     elements.matchesList.innerHTML = html;
     elements.matchesModal.classList.remove('hidden');
+}
+
+// Spectrum chart colors for matched substances
+const SPECTRUM_COLORS = [
+    '#e63946', // red
+    '#457b9d', // steel blue
+    '#2a9d8f', // teal
+    '#e9c46a', // yellow
+    '#f4a261', // orange
+];
+const SAMPLE_COLOR = '#00ff88';
+
+/**
+ * Draw an interactive spectrum comparison chart on canvas.
+ * Shows the measured (preprocessed) spectrum and the matched library spectra.
+ */
+function showSpectrum(acquisition) {
+    const preprocessed = acquisition.preprocessedSpectrum;
+    if (!preprocessed || !identifier.isReady()) return;
+
+    const library = identifier.library;
+    const wavelengthAxis = library.wavelengthAxis;
+    const identification = acquisition.identification || [];
+
+    // Gather spectra to plot: measured + matched substances
+    const traces = [];
+
+    // Measured spectrum
+    traces.push({
+        label: i18n.t('modals.spectrum.measured'),
+        data: preprocessed,
+        color: SAMPLE_COLOR,
+        dashed: false,
+    });
+
+    // Matched substance spectra from library
+    for (let i = 0; i < identification.length && i < SPECTRUM_COLORS.length; i++) {
+        const match = identification[i];
+        const libEntry = library.substances.find(s => s.name === match.substance);
+        if (libEntry) {
+            traces.push({
+                label: `#${match.rank} ${match.substance} (${match.score.toFixed(3)})`,
+                data: libEntry.data,
+                color: SPECTRUM_COLORS[i],
+                dashed: true,
+            });
+        }
+    }
+
+    drawSpectrumChart(wavelengthAxis, traces);
+    elements.spectrumModal.classList.remove('hidden');
+}
+
+/**
+ * Render spectrum traces on the canvas element.
+ */
+function drawSpectrumChart(wavelengthAxis, traces) {
+    const canvas = elements.spectrumCanvas;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    // Set canvas size accounting for device pixel ratio
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+
+    // Chart area with margins
+    const margin = { top: 15, right: 15, bottom: 40, left: 45 };
+    const chartW = w - margin.left - margin.right;
+    const chartH = h - margin.top - margin.bottom;
+
+    // Clear
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    ctx.fillStyle = isDark ? '#1a1a1a' : '#fefefe';
+    ctx.fillRect(0, 0, w, h);
+
+    // Axis range
+    const xMin = wavelengthAxis[0];
+    const xMax = wavelengthAxis[wavelengthAxis.length - 1];
+
+    // Find global Y range across all traces
+    let yMin = Infinity, yMax = -Infinity;
+    for (const trace of traces) {
+        for (const v of trace.data) {
+            if (v < yMin) yMin = v;
+            if (v > yMax) yMax = v;
+        }
+    }
+    // Add padding
+    const yPad = (yMax - yMin) * 0.05 || 0.1;
+    yMin -= yPad;
+    yMax += yPad;
+
+    // Scale functions
+    const scaleX = (val) => margin.left + ((val - xMin) / (xMax - xMin)) * chartW;
+    const scaleY = (val) => margin.top + chartH - ((val - yMin) / (yMax - yMin)) * chartH;
+
+    // Grid lines
+    const textColor = isDark ? '#999' : '#666';
+    const gridColor = isDark ? '#333' : '#ddd';
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 0.5;
+
+    // Y grid
+    const yTicks = 5;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.font = '10px monospace';
+    ctx.fillStyle = textColor;
+    for (let i = 0; i <= yTicks; i++) {
+        const val = yMin + (yMax - yMin) * (i / yTicks);
+        const y = scaleY(val);
+        ctx.beginPath();
+        ctx.moveTo(margin.left, y);
+        ctx.lineTo(w - margin.right, y);
+        ctx.stroke();
+        ctx.fillText(val.toFixed(2), margin.left - 4, y);
+    }
+
+    // X grid
+    const xTicks = 6;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for (let i = 0; i <= xTicks; i++) {
+        const val = xMin + (xMax - xMin) * (i / xTicks);
+        const x = scaleX(val);
+        ctx.beginPath();
+        ctx.moveTo(x, margin.top);
+        ctx.lineTo(x, margin.top + chartH);
+        ctx.stroke();
+        ctx.fillText(Math.round(val), x, margin.top + chartH + 4);
+    }
+
+    // Axis labels
+    ctx.fillStyle = textColor;
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Wavenumber (cm\u207B\u00B9)', margin.left + chartW / 2, h - 4);
+
+    ctx.save();
+    ctx.translate(10, margin.top + chartH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(i18n.t('modals.spectrum.intensity'), 0, 0);
+    ctx.restore();
+
+    // Draw traces
+    for (const trace of traces) {
+        ctx.strokeStyle = trace.color;
+        ctx.lineWidth = trace.dashed ? 1.5 : 2;
+        if (trace.dashed) {
+            ctx.setLineDash([6, 3]);
+        } else {
+            ctx.setLineDash([]);
+        }
+
+        ctx.beginPath();
+        for (let i = 0; i < trace.data.length; i++) {
+            const x = scaleX(wavelengthAxis[i]);
+            const y = scaleY(trace.data[i]);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Build legend
+    elements.spectrumLegend.innerHTML = traces.map(trace => {
+        const swatchClass = trace.dashed ? 'spectrum-legend-swatch dashed' : 'spectrum-legend-swatch';
+        const style = trace.dashed
+            ? `border-color: ${trace.color}`
+            : `background: ${trace.color}`;
+        return `<span class="spectrum-legend-item">
+            <span class="${swatchClass}" style="${style}"></span>
+            <span>${trace.label}</span>
+        </span>`;
+    }).join('');
 }
 
 function downloadCsv(acquisition) {
@@ -2778,6 +2975,16 @@ function setupEventListeners() {
     elements.matchesModal.addEventListener('click', (e) => {
         if (e.target === elements.matchesModal) {
             elements.matchesModal.classList.add('hidden');
+        }
+    });
+
+    // Spectrum modal
+    elements.closeSpectrumModal.addEventListener('click', () => {
+        elements.spectrumModal.classList.add('hidden');
+    });
+    elements.spectrumModal.addEventListener('click', (e) => {
+        if (e.target === elements.spectrumModal) {
+            elements.spectrumModal.classList.add('hidden');
         }
     });
 

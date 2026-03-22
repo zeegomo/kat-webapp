@@ -227,6 +227,7 @@
                 <div class="result-actions">
                     <button id="viewPlotBtn" class="btn btn-small" data-i18n="buttons.viewSummary">View Summary</button>
                     <button id="viewMatchesBtn" class="btn btn-small hidden" data-i18n="buttons.viewMatches">View Matches</button>
+                    <button id="viewSpectrumBtn" class="btn btn-small hidden" data-i18n="buttons.viewSpectrum">View Spectrum</button>
                     <button id="downloadCsvBtn" class="btn btn-small" data-i18n="buttons.downloadCsv">Download CSV</button>
                     <button id="downloadPhotoBtn" class="btn btn-small" data-i18n="buttons.downloadPhoto">Download Photo</button>
                 </div>
@@ -355,6 +356,16 @@
             <button class="modal-close" id="closeMatchesModal">×</button>
             <h3 data-i18n="modals.matches.title">Identification Matches</h3>
             <div id="matchesList"></div>
+        </div>
+    </div>
+
+    <!-- Spectrum Comparison Modal -->
+    <div id="spectrumModal" class="modal hidden">
+        <div class="modal-content spectrum-modal-content">
+            <button class="modal-close" id="closeSpectrumModal">&times;</button>
+            <h3 data-i18n="modals.spectrum.title">Spectrum Comparison</h3>
+            <canvas id="spectrumCanvas"></canvas>
+            <div id="spectrumLegend" class="spectrum-legend"></div>
         </div>
     </div>
 
