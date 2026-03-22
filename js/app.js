@@ -249,6 +249,7 @@ const elements = {
     historyResultTime: document.getElementById('historyResultTime'),
     historyViewPlotBtn: document.getElementById('historyViewPlotBtn'),
     historyViewMatchesBtn: document.getElementById('historyViewMatchesBtn'),
+    historyViewSpectrumBtn: document.getElementById('historyViewSpectrumBtn'),
     historyDownloadCsvBtn: document.getElementById('historyDownloadCsvBtn'),
     historyDownloadPhotoBtn: document.getElementById('historyDownloadPhotoBtn'),
 
@@ -1998,6 +1999,11 @@ async function showHistoryAcquisition(idx) {
     elements.historyViewMatchesBtn.onclick = () => showMatches(identification);
     elements.historyViewMatchesBtn.disabled = !hasMultipleMatches;
     elements.historyViewMatchesBtn.classList.toggle('hidden', !hasMultipleMatches);
+
+    const hasSpectrum = !!acquisition.preprocessedSpectrum && identifier.isReady();
+    elements.historyViewSpectrumBtn.onclick = () => showSpectrum(acquisition);
+    elements.historyViewSpectrumBtn.disabled = !hasSpectrum;
+    elements.historyViewSpectrumBtn.classList.toggle('hidden', !hasSpectrum);
 
     elements.historyDownloadCsvBtn.onclick = () => downloadCsv(acquisition);
     elements.historyDownloadCsvBtn.disabled = !acquisition.csv;
