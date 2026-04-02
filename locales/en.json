@@ -150,6 +150,7 @@
     "close": "Close",
     "viewSummary": "View Summary",
     "viewMatches": "View Matches",
+    "viewSpectrum": "View Spectrum",
     "downloadCsv": "Download CSV",
     "testConnection": "Test Connection",
     "syncNow": "Sync Now",
@@ -257,6 +258,11 @@
     },
     "matches": {
       "title": "Identification Matches"
+    },
+    "spectrum": {
+      "title": "Spectrum Comparison",
+      "measured": "Measured",
+      "intensity": "Intensity"
     },
     "filterBay": {
       "message": "Close the filter bay"

@@ -227,6 +227,7 @@
                 <div class="result-actions">
                     <button id="viewPlotBtn" class="btn btn-small" data-i18n="buttons.viewSummary">View Summary</button>
                     <button id="viewMatchesBtn" class="btn btn-small hidden" data-i18n="buttons.viewMatches">View Matches</button>
+                    <button id="viewSpectrumBtn" class="btn btn-small hidden" data-i18n="buttons.viewSpectrum">View Spectrum</button>
                     <button id="downloadCsvBtn" class="btn btn-small" data-i18n="buttons.downloadCsv">Download CSV</button>
                 </div>
             </section>
@@ -357,6 +358,16 @@
         </div>
     </div>
 
+    <!-- Spectrum Comparison Modal -->
+    <div id="spectrumModal" class="modal hidden">
+        <div class="modal-content spectrum-modal-content">
+            <button class="modal-close" id="closeSpectrumModal">&times;</button>
+            <h3 data-i18n="modals.spectrum.title">Spectrum Comparison</h3>
+            <canvas id="spectrumCanvas"></canvas>
+            <div id="spectrumLegend" class="spectrum-legend"></div>
+        </div>
+    </div>
+
     <!-- Filter Bay Modal -->
     <div id="filterBayModal" class="modal hidden">
         <div class="modal-content filter-bay-modal-content">
@@ -438,6 +449,7 @@
                     <div class="result-actions">
                         <button id="historyViewPlotBtn" class="btn btn-small" data-i18n="buttons.viewSummary">View Summary</button>
                         <button id="historyViewMatchesBtn" class="btn btn-small hidden" data-i18n="buttons.viewMatches">View Matches</button>
+                        <button id="historyViewSpectrumBtn" class="btn btn-small hidden" data-i18n="buttons.viewSpectrum">View Spectrum</button>
                         <button id="historyDownloadCsvBtn" class="btn btn-small" data-i18n="buttons.downloadCsv">Download CSV</button>
                     </div>
                 </div>
