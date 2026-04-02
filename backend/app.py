@@ -7,6 +7,7 @@ Serves the frontend directly from the repo root.
 
 import atexit
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from flask import Flask, send_from_directory
 from flask_cors import CORS
@@ -16,6 +17,9 @@ from .camera import get_camera
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Log file path (inside data directory)
+LOG_DIR = Path("~/.kat/logs").expanduser()
 
 # Data directory (only for calibration files and library - read-only)
 DATA_DIR = Path("~/.kat").expanduser()
@@ -31,6 +35,21 @@ def create_app() -> Flask:
     # Enable CORS for cross-origin API calls (webapp hosted on GitHub Pages)
     # allow_private_network=True enables Private Network Access for older Chrome versions
     CORS(app, resources={r"/api/*": {"origins": "*"}}, allow_private_network=True)
+
+    # Set up rotating file handler for centralized log collection
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_file = LOG_DIR / "backend.log"
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=2 * 1024 * 1024, backupCount=3  # 2MB per file, 3 backups
+    )
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter(
+        "%(asctime)s\t%(levelname)s\t%(name)s\t%(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%S",
+    ))
+    # Add to root logger so all modules' logs are captured
+    logging.getLogger().addHandler(file_handler)
+    app.config["LOG_FILE"] = log_file
 
     # Store global state in app config
     camera = get_camera()

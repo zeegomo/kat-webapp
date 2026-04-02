@@ -21,6 +21,54 @@ api_bp = Blueprint("api", __name__)
 
 
 # ============================================================================
+# Logs Endpoint (for centralized log collection)
+# ============================================================================
+
+
+@api_bp.route("/logs", methods=["GET"])
+def get_logs():
+    """Return recent backend log entries as JSON.
+
+    Query params:
+      - limit: max lines to return (default 200, max 1000)
+      - since: ISO timestamp, only return entries after this time
+    """
+    log_file = current_app.config.get("LOG_FILE")
+    if not log_file or not log_file.exists():
+        return jsonify({"entries": []})
+
+    limit = min(int(request.args.get("limit", 200)), 1000)
+    since = request.args.get("since")
+
+    entries = []
+    try:
+        with open(log_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split("\t", 3)
+                if len(parts) < 4:
+                    continue
+                ts, level, name, message = parts
+                # Filter by 'since' timestamp
+                if since and ts <= since:
+                    continue
+                entries.append({
+                    "timestamp": ts,
+                    "level": level.lower(),
+                    "message": f"[{name}] {message}",
+                })
+        # Return only the most recent entries
+        entries = entries[-limit:]
+    except Exception as e:
+        logger.warning(f"Failed to read log file: {e}")
+        return jsonify({"entries": [], "error": str(e)})
+
+    return jsonify({"entries": entries})
+
+
+# ============================================================================
 # Settings Endpoints (ephemeral - for current capture session only)
 # ============================================================================
 
