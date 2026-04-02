@@ -388,7 +388,14 @@ const api = {
             const response = await fetch(url, fetchOptions);
             console.log(`API ${method} ${url} -> ${response.status}`);
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                let detail = '';
+                try {
+                    const body = await response.json();
+                    detail = body.message || body.error || '';
+                } catch (_) {}
+                throw new Error(detail
+                    ? `HTTP ${response.status}: ${detail}`
+                    : `HTTP ${response.status}: ${response.statusText}`);
             }
             return response;
         } catch (error) {
@@ -1013,6 +1020,7 @@ async function stopPreview() {
         resetPreviewUI();
     } catch (error) {
         console.error('Failed to stop preview:', error);
+        elements.previewStatus.textContent = i18n.t('preview.error', { message: error.message });
     }
 }
 
@@ -1057,7 +1065,7 @@ async function pollPreviewStatus() {
         }
     } catch (error) {
         console.error('Status poll error:', error);
-        elements.previewStatus.textContent = i18n.t('preview.connectionError');
+        elements.previewStatus.textContent = i18n.t('preview.error', { message: error.message });
         resetPreviewUI();
         return;  // Stop polling
     }
@@ -1081,6 +1089,8 @@ async function loadCalibrationStatus() {
         updateCalibrationUI(status);
     } catch (error) {
         console.error('Failed to load calibration status:', error);
+        elements.calibrationStatus.className = 'calibration-status missing';
+        elements.calibrationStatus.textContent = i18n.t('step2.status.loadError', { error: error.message });
     }
 }
 

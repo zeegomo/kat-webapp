@@ -87,7 +87,8 @@
       "camera": "Camera",
       "wavelength": "Wavelength",
       "ok": "OK",
-      "missing": "Missing"
+      "missing": "Missing",
+      "loadError": "Could not load calibration: {error}"
     }
   },
   "step3": {

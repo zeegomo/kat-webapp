@@ -87,7 +87,8 @@
       "camera": "Fotocamera",
       "wavelength": "Lunghezza d'onda",
       "ok": "OK",
-      "missing": "Mancante"
+      "missing": "Mancante",
+      "loadError": "Impossibile caricare la calibrazione: {error}"
     }
   },
   "step3": {
