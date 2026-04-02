@@ -6,7 +6,7 @@
  */
 
 const DB_NAME = 'spettromiao-mobile';
-const DB_VERSION = 3;
+const DB_VERSION = 2;
 
 // Store names
 const STORES = {
@@ -16,7 +16,6 @@ const STORES = {
     settings: 'settings',
     syncQueue: 'syncQueue',
     library: 'library',
-    logs: 'logs',
 };
 
 let dbInstance = null;
@@ -86,14 +85,6 @@ async function openDB() {
             // Library store (for reference spectra)
             if (!db.objectStoreNames.contains(STORES.library)) {
                 db.createObjectStore(STORES.library, { keyPath: 'id' });
-            }
-
-            // Logs store (for centralized logging)
-            if (!db.objectStoreNames.contains(STORES.logs)) {
-                const logs = db.createObjectStore(STORES.logs, { keyPath: 'id' });
-                logs.createIndex('timestamp', 'timestamp');
-                logs.createIndex('level', 'level');
-                logs.createIndex('source', 'source');
             }
         };
     });

@@ -3018,6 +3018,7 @@ async function init() {
     if (state.initInProgress || state.appReady) return;
     state.initInProgress = true;
 
+    logger.start();
     setupStartupModalEventListeners();
     registerServiceWorkerInBackground();
 

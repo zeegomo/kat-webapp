@@ -6,11 +6,12 @@
  * handles caching. This service worker is for direct GitHub Pages access.
  */
 
-const CACHE_NAME = 'spettromiao-mobile-v3';
+const CACHE_NAME = 'spettromiao-mobile-v4';
 const STATIC_ASSETS = [
     './',
     './index.html',
     './css/style.css',
+    './js/logger.js',
     './js/db.js',
     './js/identifier.js',
     './js/sync.js',
